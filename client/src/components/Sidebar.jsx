@@ -45,12 +45,19 @@ export default function Sidebar({
               <button
                 key={p.name}
                 onClick={() => setPersona(p.name)}
-                className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all relative z-10 ${
+                className={`flex flex-col items-center justify-center py-2 rounded-lg transition-colors relative z-10 ${
                   active ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
                 title={p.name}
               >
-                <div className={`w-8 h-8 flex items-center justify-center relative z-20 ${active ? 'icon-droplet' : ''}`}>
+                {active && (
+                  <motion.div 
+                    layoutId="activePersonaCircle"
+                    className="absolute inset-0 icon-droplet"
+                    transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
+                  />
+                )}
+                <div className={`w-8 h-8 flex items-center justify-center relative z-20`}>
                   <Icon size={16} />
                 </div>
               </button>
