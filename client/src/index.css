@@ -52,21 +52,26 @@
 }
 
 /* Precise Icon Droplets */
-.icon-droplet {
+.icon-droplet, .active-droplet-slider {
   @apply relative flex items-center justify-center overflow-visible transition-all duration-500;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 
-    inset -4px -4px 6px rgba(255, 255, 255, 0.1),
-    inset 4px 4px 8px rgba(0, 0, 0, 0.3),
-    0 4px 10px rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px) saturate(140%);
-  animation: surface-tension 6s infinite alternate ease-in-out;
+    inset -5px -5px 10px rgba(255, 255, 255, 0.1),
+    inset 5px 5px 12px rgba(0, 0, 0, 0.4),
+    0 4px 15px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px) saturate(160%);
+  animation: surface-tension 5s infinite alternate ease-in-out;
 }
 
-.icon-droplet::before {
+.icon-droplet::before, .active-droplet-slider::before {
   content: '';
-  @apply absolute top-[15%] left-[20%] w-[30%] h-[20%] bg-white/40 rounded-full blur-[1px] pointer-events-none;
+  @apply absolute top-[12%] left-[18%] w-[35%] h-[20%] bg-white/50 rounded-full blur-[1px] pointer-events-none z-30;
+}
+
+.icon-droplet::after, .active-droplet-slider::after {
+  content: '';
+  @apply absolute bottom-[10%] right-[15%] w-[15%] h-[10%] bg-white/10 rounded-full blur-[2px] pointer-events-none z-30;
 }
 
 @keyframes surface-tension {

@@ -53,8 +53,9 @@ export default function Sidebar({
                 {active && (
                   <motion.div 
                     layoutId="activePersonaDroplet"
-                    className="absolute inset-0 bg-white/20 rounded-xl"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    className="absolute inset-0 active-droplet-slider"
+                    style={{ animation: 'surface-tension 4s infinite alternate ease-in-out' }}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
                   />
                 )}
                 <div className={`w-8 h-8 flex items-center justify-center relative z-20`}>
