@@ -150,7 +150,7 @@ function App() {
   useEffect(() => { if (!isSpeaking) setSpeakingText(null); }, [isSpeaking]);
 
   const personaColors = {
-    'Assistant': { primary: '#47556944', accent: '#1e293b44' },
+    'Assistant': { primary: '#0ea5e933', accent: '#0369a133' },
     'Coder Wizard': { primary: '#33415544', accent: '#0f172a44' },
     'Creative Writer': { primary: '#64748b44', accent: '#33415544' }
   };
