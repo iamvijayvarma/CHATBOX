@@ -144,6 +144,17 @@ function App() {
     }
   };
 
+  const [user, setUser] = useState(null);
+
+  const handleLogin = () => {
+    // Mocking Google Login for now
+    setUser({
+      name: 'Bingo User',
+      email: 'user@example.com',
+      avatar: null
+    });
+  };
+
   const handleSpeak = (text) => { setSpeakingText(text); speakText(text); };
   const handleStopSpeak = () => { setSpeakingText(null); stopSpeaking(); };
 
@@ -197,8 +208,8 @@ function App() {
           onNewChat={handleNewChat}
           onDeleteSession={handleDeleteSession}
           onExport={handleExport}
-          persona={persona}
-          setPersona={setPersona}
+          user={user}
+          onLogin={handleLogin}
         />
         
         <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#0a0c10]/60 backdrop-blur-[2px]">
