@@ -45,15 +45,15 @@ export default function Sidebar({
               <button
                 key={p.name}
                 onClick={() => setPersona(p.name)}
-                className={`flex flex-col items-center justify-center py-2.5 rounded-xl transition-colors relative z-10 ${
-                  active ? 'text-white' : 'text-slate-500 hover:text-slate-300'
+                className={`flex flex-col items-center justify-center py-2.5 rounded-xl transition-all relative z-10 ${
+                  active ? 'text-white droplet-btn !border-white/10' : 'text-slate-500 hover:text-slate-300'
                 }`}
                 title={p.name}
               >
                 {active && (
                   <motion.div 
                     layoutId="activePersona"
-                    className="absolute inset-0 bg-white/10 blur-[2px] rounded-xl border border-white/20 shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                    className="absolute inset-0 bg-white/5 blur-[2px] rounded-xl"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}

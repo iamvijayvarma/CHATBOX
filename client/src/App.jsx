@@ -159,6 +159,21 @@ function App() {
   return (
     <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
       
+      {/* Liquid Water SVG Filter Registry */}
+      <svg className="hidden">
+        <defs>
+          <filter id="liquid-filter">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 45 -15" result="goo" />
+            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+          </filter>
+          <filter id="organic-edge">
+            <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" />
+          </filter>
+        </defs>
+      </svg>
+
       {/* Liquid Water Background Engine */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <motion.div 

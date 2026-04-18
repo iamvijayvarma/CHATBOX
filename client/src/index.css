@@ -13,29 +13,46 @@
   }
 }
 
-/* Real Water Droplet Profile */
+/* Hyper-Realistic Water Droplet Profile */
 .water-droplet {
-  @apply relative overflow-hidden;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  @apply relative overflow-visible;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 
-    inset -8px -8px 15px rgba(255, 255, 255, 0.05),
-    inset 8px 8px 15px rgba(0, 0, 0, 0.3),
-    0 10px 30px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(16px) saturate(140%);
-  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
-  animation: surface-tension 12s infinite alternate ease-in-out;
+    inset -10px -10px 15px rgba(255, 255, 255, 0.1),
+    inset 10px 10px 20px rgba(0, 0, 0, 0.4),
+    0 20px 40px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(25px) saturate(160%);
+  filter: url(#organic-edge);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.water-droplet::before {
+  content: '';
+  @apply absolute top-[10%] left-[15%] w-[35%] h-[20%] bg-white/40 rounded-full blur-[3px] pointer-events-none;
+}
+
+.water-droplet::after {
+  content: '';
+  @apply absolute bottom-[8%] right-[15%] w-[15%] h-[10%] bg-white/10 rounded-full blur-[5px] pointer-events-none;
+}
+
+/* Liquid Glass Elements */
+.liquid-glass {
+  @apply bg-white/[0.02] backdrop-blur-[40px] border border-white/10 shadow-[inner_-5px_-5px_20px_rgba(255,255,255,0.05),inner_8px_8px_25px_rgba(0,0,0,0.3),0_30px_60px_rgba(0,0,0,0.5)];
+  filter: url(#organic-edge);
+}
+
+/* Refinement for Buttons */
+.droplet-btn {
+  @apply water-droplet cursor-pointer flex items-center justify-center;
+  animation: surface-tension 8s infinite alternate ease-in-out;
 }
 
 @keyframes surface-tension {
   0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-  50% { border-radius: 60% 40% 30% 70% / 50% 60% 40% 60%; }
-  100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
-}
-
-/* Liquid Glass Panel */
-.liquid-glass {
-  @apply bg-white/3 backdrop-blur-[30px] border border-white/10 shadow-[inner_-4px_-4px_10px_rgba(255,255,255,0.05),inner_4px_4px_10px_rgba(0,0,0,0.2),0_15px_45px_rgba(0,0,0,0.4)];
+  50% { border-radius: 60% 40% 35% 65% / 50% 60% 45% 55%; }
+  100% { border-radius: 35% 65% 60% 40% / 45% 55% 50% 50%; }
 }
 
 /* Highlight Refraction */

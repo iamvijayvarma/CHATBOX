@@ -46,13 +46,12 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
                     whileHover={{ scale: 1.05, y: -5 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onQuickAction(action.prompt)}
-                    className="water-droplet group p-8 flex flex-col items-center text-center space-y-4"
+                    className="droplet-btn group p-8 flex flex-col items-center text-center space-y-4"
                   >
-                    <div className="refraction" />
                     <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-white group-hover:bg-indigo-500/20 transition-all border border-white/5">
                       <Icon size={20} />
                     </div>
-                    <span className="text-sm font-semibold text-slate-300 tracking-wide uppercase">{action.title}</span>
+                    <span className="text-sm font-semibold text-slate-300 tracking-wide uppercase relative z-10">{action.title}</span>
                   </motion.button>
                 )
               })}
