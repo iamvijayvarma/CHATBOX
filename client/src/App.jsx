@@ -149,6 +149,14 @@ function App() {
 
   useEffect(() => { if (!isSpeaking) setSpeakingText(null); }, [isSpeaking]);
 
+  const personaColors = {
+    'Assistant': { primary: '#312e8166', accent: '#1e1b4b66' },
+    'Coder Wizard': { primary: '#1e3a8a66', accent: '#17255466' },
+    'Creative Writer': { primary: '#581c8766', accent: '#2e106566' }
+  };
+
+  const currentColors = personaColors[persona] || personaColors['Assistant'];
+
   return (
     <div className="flex h-screen w-screen bg-black text-slate-100 font-sans relative overflow-hidden">
       
