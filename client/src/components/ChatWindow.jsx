@@ -35,14 +35,29 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
             </div>
 
             {/* Quick Actions Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
+            <motion.div 
+              initial="hidden"
+              animate="show"
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.1 }
+                }
+              }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-2xl px-4"
+            >
               {quickActions.map((action, idx) => {
                 const Icon = action.icon;
                 return (
                   <motion.button
                     key={idx}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
+                    variants={{
+                      hidden: { opacity: 0, scale: 0.9, y: 10 },
+                      show: { opacity: 1, scale: 1, y: 0 }
+                    }}
+                    whileHover={{ scale: 1.05, y: -5, transition: { type: "spring", stiffness: 400, damping: 10 } }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => onQuickAction(action.prompt)}
                     className="flex flex-col items-center text-center p-6 rounded-3xl bg-white/5 backdrop-blur-2xl border border-white/10 hover:bg-white/10 transition-all shadow-xl hover:shadow-[0_8px_30px_rgba(99,102,241,0.2)]"
                   >
@@ -53,7 +68,7 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
                   </motion.button>
                 )
               })}
-            </div>
+            </motion.div>
           </motion.div>
         ) : (
           messages.map((message, index) => (

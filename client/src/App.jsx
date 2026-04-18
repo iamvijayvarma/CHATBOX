@@ -160,9 +160,21 @@ function App() {
         />
         <div className="absolute inset-0 bg-[#020617]/60" /> {/* Dark overlay to Blend */}
         
-        <div className="ambient-blob bg-indigo-600/30 w-[600px] h-[600px] top-[-10%] left-[-10%]" style={{ animationDelay: '0s' }} />
-        <div className="ambient-blob bg-purple-600/30 w-[500px] h-[500px] bottom-[-20%] right-[-10%]" style={{ animationDelay: '2s', animationDirection: 'reverse' }} />
-        <div className="ambient-blob bg-blue-600/20 w-[800px] h-[800px] top-[20%] left-[30%]" style={{ animationDelay: '4s' }} />
+        <motion.div 
+          animate={{ background: `radial-gradient(circle, ${currentColors.primary} 0%, transparent 70%)` }}
+          transition={{ duration: 2, ease: "easeInOut" }}
+          className="ambient-blob w-[600px] h-[600px] top-[-10%] left-[-10%]" 
+        />
+        <motion.div 
+          animate={{ background: `radial-gradient(circle, ${currentColors.accent} 0%, transparent 70%)` }}
+          transition={{ duration: 2.5, ease: "easeInOut", delay: 0.2 }}
+          className="ambient-blob w-[500px] h-[500px] bottom-[-20%] right-[-10%]" 
+        />
+        <motion.div 
+          animate={{ background: `radial-gradient(circle, #3b82f633 0%, transparent 70%)` }}
+          transition={{ duration: 3, ease: "easeInOut" }}
+          className="ambient-blob w-[800px] h-[800px] top-[20%] left-[30%]" 
+        />
       </div>
 
       {/* Main Layout Overlay */}

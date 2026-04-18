@@ -7,9 +7,10 @@ export default function MessageBubble({ message, onSpeak, onStopSpeak, isSpeakin
   const isUser = message.role === 'user';
 
   return (
-    <motion.div
+    <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20 }}
       className={`flex w-full mb-6 ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       <div className={`flex max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end gap-3`}>

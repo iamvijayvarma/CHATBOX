@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { Plus, MessageSquare, Trash2, Download, Upload, Cpu, PenTool, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Sidebar({
   sessions,
@@ -36,7 +37,7 @@ export default function Sidebar({
       {/* Persona Selection */}
       <div className="px-4 mb-4">
         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">AI Persona</label>
-        <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/10">
+        <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/10 relative">
           {personas.map((p) => {
             const Icon = p.icon;
             const active = persona === p.name;
@@ -49,7 +50,14 @@ export default function Sidebar({
                 }`}
                 title={p.name}
               >
-                <div className={`w-8 h-8 ${active ? 'icon-droplet' : ''} flex items-center justify-center`}>
+                {active && (
+                  <motion.div 
+                    layoutId="activePersona"
+                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/10"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <div className={`w-8 h-8 flex items-center justify-center relative z-10`}>
                   <Icon size={16} />
                 </div>
               </button>
