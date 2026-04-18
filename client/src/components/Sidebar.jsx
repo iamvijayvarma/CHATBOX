@@ -12,49 +12,9 @@ export default function Sidebar({
   persona,
   setPersona
 }) {
-  const personas = [
-    { name: 'Assistant', icon: Sparkles },
-    { name: 'Coder Wizard', icon: Cpu },
-    { name: 'Creative Writer', icon: PenTool },
-  ];
-
   return (
     <div className="w-72 h-full glass-panel flex flex-col pt-4 z-10 shrink-0">
       
-      {/* Persona Selection */}
-      <div className="px-4 mb-4">
-        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">AI Persona</label>
-        <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/10 relative">
-          {/* Smooth Slider Indicator */}
-          <motion.div 
-            className="absolute h-[calc(100%-8px)] w-[calc(33.33%-4px)] icon-droplet bg-sky-500/30 shadow-[0_0_15px_rgba(14,165,233,0.5)] z-0"
-            animate={{ 
-              left: persona === 'Assistant' ? '4px' : persona === 'Coder Wizard' ? 'calc(33.33% + 2px)' : 'calc(66.66% + 1px)' 
-            }}
-            transition={{ type: "spring", stiffness: 350, damping: 25 }}
-          />
-
-          {personas.map((p) => {
-            const Icon = p.icon;
-            const active = persona === p.name;
-            return (
-              <button
-                key={p.name}
-                onClick={() => setPersona(p.name)}
-                className={`flex flex-col items-center justify-center py-2 rounded-lg transition-colors relative z-10 ${
-                  active ? 'text-white' : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title={p.name}
-              >
-                <div className={`w-8 h-8 flex items-center justify-center relative z-20`}>
-                  <Icon size={16} />
-                </div>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
       {/* New Chat Button */}
       <div className="px-4 mb-4">
         <button
