@@ -49,15 +49,22 @@ app.post('/api/chat', async (req, res) => {
     res.end();
   } catch (error) {
     if (error.status === 401 || process.env.OPENAI_API_KEY === undefined || process.env.OPENAI_API_KEY === 'your_openai_api_key_here') {
-      console.log('401 Unauthorized detected. Falling back to Mock Demo Mode.');
-      const personaIntro = persona === 'Coder Wizard' ? '👩‍💻 *Beep boop! Code compiled!* ' : persona === 'Creative Writer' ? '✨ *A tale begins...* ' : '🤖 *System online...* ';
-      const mockStr = `**[LIQUID DEMO MODE ACTIVE - ${persona.toUpperCase()}]**\n\n${personaIntro} It looks like you haven't plugged in a real OpenAI API Key into \`server/.env\` yet. \n\nHowever, **the true Liquid Glass UI is now actively rendering!** \n\nHere are the new features you are experiencing right now:\n1. **Animated Ambient Globs**: Check out those dynamically floating gradient orbs in the background.\n2. **Deep Glassmorphism**: Notice the sharp white borders and the intense \`backdrop-blur-3xl\` rendering.\n3. **Quick Action Cards & Personas**: You successfully triggered this via the UI!\n\n*(To chat with the real intelligence using this beautiful UI, just update your API key and restart the server!)*`;
+      console.log('Falling back to Contextual Mock Mode.');
       
-      const words = mockStr.split(/([ \n]+)/); // preserve spaces and newlines
+      const lastUserMessage = messages[messages.length - 1]?.content || '';
+      let mockStr = `**[LIQUID DEMO MODE - ${persona.toUpperCase()}]**\n\n`;
+
+      if (persona === 'Coder Wizard') {
+        mockStr += `👩‍💻 *Beep boop! Analyzing your request...*\n\nSince no API key is set, I've generated a simulated response for: "${lastUserMessage.slice(0, 30)}..."\n\n\`\`\`javascript\n// Mock Code Generated\nfunction demo() {\n  console.log("This is a simulated response in ${persona} mode.");\n  return true;\n}\n\`\`\`\n\n*(Add your OpenAI key to .env for real code!)*`;
+      } else if (persona === 'Creative Writer') {
+        mockStr += `✨ *The ink flows onto the digital parchment...*\n\nYour prompt about "${lastUserMessage.slice(0, 30)}..." inspired a momentary vision! \n\n"In a world where gradients float like clouds and glass is as thick as moonlight, your message echoes through the source code..."\n\n*(To continue this story with GPT-4, update your API key!)*`;
+      } else {
+        mockStr += `🤖 *Processing: "${lastUserMessage.slice(0, 50)}..."*\n\nI am currently in **Liquid Demo Mode** because the API key is missing. However, I can still confirm that the UI is fully reactive! \n\n**Next Steps:**\n1. Find your API key at platform.openai.com\n2. Paste it into \`server/.env\`\n3. Restart the server.\n\nKeep exploring this beautiful interface!`;
+      }
+      
+      const words = mockStr.split(/([ \n]+)/);
       let i = 0;
       
-      // We must make sure headers are set if error happened before. 
-      // Express might throw if headers already sent, but stream errors usually throw immediately.
       if (!res.headersSent) {
           res.setHeader('Content-Type', 'text/event-stream');
           res.setHeader('Cache-Control', 'no-cache');
@@ -68,14 +75,14 @@ app.post('/api/chat', async (req, res) => {
          if (i < words.length) {
             res.write(`data: ${JSON.stringify({ content: words[i] })}\n\n`);
             i++;
-            setTimeout(sendChunk, Math.random() * 50 + 20); // random typing speed
+            setTimeout(sendChunk, Math.random() * 30 + 10);
          } else {
             res.write('data: [DONE]\n\n');
             res.end();
          }
       };
       
-      setTimeout(sendChunk, 500);
+      setTimeout(sendChunk, 200);
       return;
     }
     

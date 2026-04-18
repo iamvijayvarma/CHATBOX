@@ -1,52 +1,53 @@
 @import "tailwindcss";
 
 @theme {
-  --color-dark-surface: #020617;
-  --color-dark-bg: #0f172a;
+  --color-grey-dark: #0f1115;
+  --color-grey-panel: #1e2128;
 }
 
 @layer base {
   body {
-    @apply bg-black text-neutral-100 antialiased min-h-screen selection:bg-indigo-500/30 overflow-hidden;
+    @apply bg-[#0f1115] text-[#e2e8f0] antialiased min-h-screen selection:bg-indigo-500/30 overflow-hidden;
     margin: 0;
     padding: 0;
   }
 }
 
-/* Custom Scrollbar for Liquid UI */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+/* Real Water Droplet Profile */
+.water-droplet {
+  @apply relative overflow-hidden;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    inset -8px -8px 15px rgba(255, 255, 255, 0.05),
+    inset 8px 8px 15px rgba(0, 0, 0, 0.3),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px) saturate(140%);
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  animation: surface-tension 12s infinite alternate ease-in-out;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
+@keyframes surface-tension {
+  0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  50% { border-radius: 60% 40% 30% 70% / 50% 60% 40% 60%; }
+  100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+/* Liquid Glass Panel */
+.liquid-glass {
+  @apply bg-white/3 backdrop-blur-[30px] border border-white/10 shadow-[inner_-4px_-4px_10px_rgba(255,255,255,0.05),inner_4px_4px_10px_rgba(0,0,0,0.2),0_15px_45px_rgba(0,0,0,0.4)];
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+/* Highlight Refraction */
+.refraction {
+  @apply absolute top-[10%] left-[15%] w-[30%] h-[15%] bg-white/20 rounded-full blur-[2px] pointer-events-none;
 }
 
-.glass-panel {
-  @apply bg-white/5 backdrop-blur-3xl border-t border-l border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)];
+/* Ambient Liquid Globs */
+.water-glob {
+  @apply absolute rounded-full mix-blend-soft-light filter blur-[100px] opacity-20 pointer-events-none;
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
 }
 
-.ambient-blob {
-  @apply absolute rounded-full mix-blend-screen filter blur-[100px] opacity-50 pointer-events-none;
-}
-
-@keyframes blobAnim {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0px, 0px) scale(1); }
-}
-
-.animate-blob {
-  animation: blobAnim 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
-}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
