@@ -4,6 +4,7 @@ import ChatWindow from './components/ChatWindow';
 import InputBar from './components/InputBar';
 import { chatStorage } from './services/chatStorage';
 import { useVoiceControl } from './hooks/useVoiceControl';
+import liquidBg from './assets/liquid-bg.png';
 
 function App() {
   const [sessions, setSessions] = useState([]);
@@ -150,8 +151,15 @@ function App() {
   return (
     <div className="flex h-screen w-screen bg-black text-slate-100 font-sans relative overflow-hidden">
       
-      {/* Liquid Glass True Background Animation */}
-      <div className="absolute inset-0 z-0 bg-transparent overflow-hidden">
+      {/* Liquid Glass Background Logic */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <img 
+          src={liquidBg} 
+          className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-screen scale-[1.05]" 
+          alt="Base Texture" 
+        />
+        <div className="absolute inset-0 bg-[#020617]/60" /> {/* Dark overlay to Blend */}
+        
         <div className="ambient-blob bg-indigo-600/30 w-[600px] h-[600px] top-[-10%] left-[-10%]" style={{ animationDelay: '0s' }} />
         <div className="ambient-blob bg-purple-600/30 w-[500px] h-[500px] bottom-[-20%] right-[-10%]" style={{ animationDelay: '2s', animationDirection: 'reverse' }} />
         <div className="ambient-blob bg-blue-600/20 w-[800px] h-[800px] top-[20%] left-[30%]" style={{ animationDelay: '4s' }} />
