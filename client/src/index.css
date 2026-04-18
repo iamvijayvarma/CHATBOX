@@ -53,14 +53,14 @@
 
 /* Precise Icon Droplets */
 .icon-droplet, .active-droplet-slider {
-  @apply relative flex items-center justify-center overflow-visible transition-all duration-500;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  @apply relative flex items-center justify-center overflow-visible;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   box-shadow: 
     inset -5px -5px 10px rgba(255, 255, 255, 0.2),
     inset 5px 5px 12px rgba(0, 0, 0, 0.4),
-    0 4px 15px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(12px) saturate(180%);
+    0 4px 15px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px) saturate(200%);
   animation: surface-tension 5s infinite alternate ease-in-out;
 }
 

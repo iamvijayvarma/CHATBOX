@@ -38,6 +38,16 @@ export default function Sidebar({
       <div className="px-4 mb-4">
         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">AI Persona</label>
         <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/10 relative" style={{ filter: 'url(#goo)' }}>
+          {/* Liquid Slider Blob */}
+          <motion.div 
+            className="absolute h-[calc(100%-8px)] w-[calc(33.33%-4px)] active-droplet-slider z-0"
+            animate={{ 
+              left: persona === 'Assistant' ? '4px' : persona === 'Coder Wizard' ? 'calc(33.33% + 2px)' : 'calc(66.66% + 1px)' 
+            }}
+            style={{ animation: 'surface-tension 4s infinite alternate ease-in-out' }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          />
+
           {personas.map((p) => {
             const Icon = p.icon;
             const active = persona === p.name;
@@ -50,14 +60,6 @@ export default function Sidebar({
                 }`}
                 title={p.name}
               >
-                {active && (
-                  <motion.div 
-                    layoutId="activePersonaDroplet"
-                    className="absolute inset-0 active-droplet-slider"
-                    style={{ animation: 'surface-tension 4s infinite alternate ease-in-out' }}
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
-                  />
-                )}
                 <div className={`w-8 h-8 flex items-center justify-center relative z-20`}>
                   <Icon size={16} />
                 </div>
