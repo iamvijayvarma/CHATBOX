@@ -45,8 +45,23 @@
 
 /* Refinement for Buttons */
 .droplet-btn {
-  @apply water-droplet cursor-pointer flex items-center justify-center;
+  @apply cursor-pointer flex items-center justify-center;
+  @apply relative overflow-visible;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 
+    inset -10px -10px 15px rgba(255, 255, 255, 0.1),
+    inset 10px 10px 20px rgba(0, 0, 0, 0.4),
+    0 20px 40px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(25px) saturate(160%);
+  filter: url(#organic-edge);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   animation: surface-tension 8s infinite alternate ease-in-out;
+}
+
+.droplet-btn::before {
+  content: '';
+  @apply absolute top-[10%] left-[15%] w-[35%] h-[20%] bg-white/40 rounded-full blur-[3px] pointer-events-none;
 }
 
 @keyframes surface-tension {
