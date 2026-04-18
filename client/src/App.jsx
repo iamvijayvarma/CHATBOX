@@ -185,6 +185,17 @@ function App() {
           className="ambient-blob w-[800px] h-[800px] top-[20%] left-[30%]" 
         />
       </div>
+      
+      {/* Liquid SVG Filter Registry */}
+      <svg className="hidden">
+        <defs>
+          <filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+          </filter>
+        </defs>
+      </svg>
 
       {/* Main Layout Overlay */}
       <div className="flex h-full w-full z-10 relative">

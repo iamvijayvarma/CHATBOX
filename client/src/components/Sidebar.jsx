@@ -37,7 +37,7 @@ export default function Sidebar({
       {/* Persona Selection */}
       <div className="px-4 mb-4">
         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">AI Persona</label>
-        <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/10 relative">
+        <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/10 relative" style={{ filter: 'url(#goo)' }}>
           {personas.map((p) => {
             const Icon = p.icon;
             const active = persona === p.name;
@@ -45,19 +45,19 @@ export default function Sidebar({
               <button
                 key={p.name}
                 onClick={() => setPersona(p.name)}
-                className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
-                  active ? 'text-white' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                className={`flex flex-col items-center justify-center py-2 rounded-lg transition-colors relative z-10 ${
+                  active ? 'text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
                 title={p.name}
               >
                 {active && (
                   <motion.div 
-                    layoutId="activePersona"
-                    className="absolute inset-0 bg-white/10 rounded-lg border border-white/10"
+                    layoutId="activePersonaDroplet"
+                    className="absolute inset-0 bg-white/20 rounded-xl"
                     transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   />
                 )}
-                <div className={`w-8 h-8 flex items-center justify-center relative z-10`}>
+                <div className={`w-8 h-8 flex items-center justify-center relative z-20`}>
                   <Icon size={16} />
                 </div>
               </button>
