@@ -67,7 +67,7 @@ export default function InputBar({ input, setInput, onSubmit, isListening, toggl
           )}
         </div>
       </div>
-      <div className="text-center mt-3 text-xs text-slate-500/80 font-medium tracking-wide">
+      <div className="text-center mt-1.5 text-xs text-slate-500/80 font-medium tracking-wide">
         AI responses may be inaccurate. Verify important information.
       </div>
     </div>
