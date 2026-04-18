@@ -5,6 +5,7 @@ import ChatWindow from './components/ChatWindow';
 import InputBar from './components/InputBar';
 import { chatStorage } from './services/chatStorage';
 import { useVoiceControl } from './hooks/useVoiceControl';
+import liquidBg from './assets/liquid-bg.png';
 
 function App() {
   const [sessions, setSessions] = useState([]);
@@ -174,8 +175,15 @@ function App() {
         </defs>
       </svg>
 
-      {/* Liquid Water Background Engine */}
+      {/* Hyper-Realistic Background Engine */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <img 
+          src={liquidBg} 
+          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity scale-[1.1] blur-[1px]" 
+          alt="Liquid Background" 
+        />
+        <div className="absolute inset-0 bg-[#0a0c10]/40 backdrop-blur-[2px]" />
+        
         <motion.div 
           animate={{ background: `radial-gradient(circle, ${currentColors.primary} 0%, transparent 70%)` }}
           transition={{ duration: 1.5, ease: "easeInOut" }}
