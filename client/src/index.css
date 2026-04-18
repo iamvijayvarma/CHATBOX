@@ -50,3 +50,30 @@
 .animate-blob {
   animation: blobAnim 10s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Precise Icon Droplets */
+.icon-droplet {
+  @apply relative flex items-center justify-center overflow-visible transition-all duration-500;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    inset -4px -4px 6px rgba(255, 255, 255, 0.1),
+    inset 4px 4px 8px rgba(0, 0, 0, 0.3),
+    0 4px 10px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px) saturate(140%);
+  animation: surface-tension 6s infinite alternate ease-in-out;
+}
+
+.icon-droplet::before {
+  content: '';
+  @apply absolute top-[15%] left-[20%] w-[30%] h-[20%] bg-white/40 rounded-full blur-[1px] pointer-events-none;
+}
+
+@keyframes surface-tension {
+  0% { border-radius: 45% 55% 50% 50% / 50% 45% 55% 50%; }
+  50% { border-radius: 55% 45% 55% 45% / 45% 55% 45% 55%; }
+  100% { border-radius: 50% 50% 45% 55% / 55% 50% 50% 45%; }
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

@@ -45,11 +45,13 @@ export default function Sidebar({
                 key={p.name}
                 onClick={() => setPersona(p.name)}
                 className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
-                  active ? 'bg-indigo-600/80 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
+                  active ? 'text-white' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
                 }`}
                 title={p.name}
               >
-                <Icon size={16} />
+                <div className={`w-8 h-8 ${active ? 'icon-droplet' : ''} flex items-center justify-center`}>
+                  <Icon size={16} />
+                </div>
               </button>
             )
           })}

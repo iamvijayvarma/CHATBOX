@@ -14,8 +14,7 @@ export default function MessageBubble({ message, onSpeak, onStopSpeak, isSpeakin
     >
       <div className={`flex max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end gap-3`}>
         {/* Avatar */}
-        <div className={`flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center shadow-lg
-          ${isUser ? 'bg-indigo-600' : 'bg-slate-800 border border-slate-700'}`}>
+        <div className={`flex-shrink-0 h-8 w-8 icon-droplet ${isUser ? 'border-white/30' : 'border-white/10'}`}>
           {isUser ? <User size={16} /> : <Bot size={16} />}
         </div>
 
