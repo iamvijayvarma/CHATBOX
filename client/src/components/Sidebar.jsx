@@ -9,22 +9,9 @@ export default function Sidebar({
   onNewChat,
   onDeleteSession,
   onExport,
-  onImport,
   persona,
   setPersona
 }) {
-  const fileInputRef = useRef(null);
-
-  const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => onImport(event.target.result);
-      reader.readAsText(file);
-    }
-    e.target.value = '';
-  };
-
   const personas = [
     { name: 'Assistant', icon: Sparkles },
     { name: 'Coder Wizard', icon: Cpu },
@@ -114,17 +101,6 @@ export default function Sidebar({
         ))}
       </div>
 
-      {/* Footer controls */}
-      <div className="p-4 border-t border-white/10 bg-[#0f1115]/80 backdrop-blur-3xl">
-        <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full flex items-center gap-3 text-slate-400 hover:text-white p-3 rounded-xl hover:bg-white/5 transition-all text-sm font-semibold tracking-wide border border-transparent hover:border-white/10"
-        >
-          <Upload size={18} />
-           Import Session
-        </button>
-      </div>
     </div>
   );
 }

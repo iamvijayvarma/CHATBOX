@@ -197,7 +197,6 @@ function App() {
           onNewChat={handleNewChat}
           onDeleteSession={handleDeleteSession}
           onExport={handleExport}
-          onImport={handleImport}
           persona={persona}
           setPersona={setPersona}
         />
