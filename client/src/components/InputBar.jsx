@@ -25,51 +25,50 @@ export default function InputBar({ input, setInput, onSubmit, isListening, toggl
   };
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto pb-8 px-6">
-      <div className="relative flex items-end w-full liquid-glass rounded-[2.5rem] p-3 pl-8 focus-within:ring-2 focus-within:ring-white/10 transition-all border border-white/5 bg-[#121418]/60 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-        <div className="refraction opacity-20" />
+    <div className="relative w-full max-w-4xl mx-auto pb-6 px-4">
+      <div className="relative flex items-end w-full glass-panel rounded-3xl p-2 pl-5 focus-within:ring-2 focus-within:ring-indigo-500/50 transition-all border border-white/10 bg-[#0f172a]/80 backdrop-blur-3xl shadow-[0_8px_30px_rgb(0,0,0,0.4)]">
         <textarea
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Message DINGO AI..."
-          className="w-full max-h-[150px] bg-transparent text-slate-100 placeholder-slate-500 resize-none outline-none py-4 text-[15px] font-medium"
+          className="w-full max-h-[150px] bg-transparent text-slate-100 placeholder-slate-400 resize-none outline-none py-3.5 text-[15px]"
           rows={1}
         />
 
-        <div className="flex items-center space-x-3 pl-4 pb-1.5 pr-2 relative z-10">
+        <div className="flex items-center space-x-2 pl-2 pb-1.5 pr-1">
           <button
             onClick={toggleListening}
-            className={`p-3.5 rounded-2xl transition-all border ${
+            className={`p-3 rounded-full transition-all ${
               isListening 
-                ? 'bg-red-500/20 text-red-400 border-red-500/30' 
-                : 'bg-white/5 text-slate-500 hover:text-slate-300 border-white/5 hover:bg-white/10'
+                ? 'bg-red-500/20 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]' 
+                : 'bg-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'
             }`}
           >
-            <Mic size={18} className={isListening ? 'animate-pulse' : ''} />
+            <Mic size={20} className={isListening ? 'animate-pulse' : ''} />
           </button>
 
           {isLoading ? (
             <button
               onClick={handleStop}
-              className="p-3.5 bg-red-600 text-white rounded-2xl hover:bg-red-500 transition-all shadow-[0_4px_15px_rgba(220,38,38,0.3)]"
+              className="p-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30"
             >
-              <Square size={18} fill="currentColor" />
+              <Square size={20} fill="currentColor" />
             </button>
           ) : (
              <button
               onClick={onSubmit}
               disabled={!input.trim()}
-              className="p-3.5 bg-white text-black rounded-2xl hover:bg-slate-200 disabled:opacity-30 disabled:grayscale transition-all shadow-[0_4px_20px_rgba(255,255,255,0.1)] active:scale-95"
+              className="p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-lg shadow-indigo-600/30"
             >
-              <Send size={18} />
+              <Send size={20} />
             </button>
           )}
         </div>
       </div>
-      <div className="text-center mt-4 text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em] opacity-50">
-        DINGO AI Intelligence Engine • Liquid v2.1
+      <div className="text-center mt-3 text-xs text-slate-500/80 font-medium tracking-wide">
+        AI responses may be inaccurate. Verify important information.
       </div>
     </div>
   );

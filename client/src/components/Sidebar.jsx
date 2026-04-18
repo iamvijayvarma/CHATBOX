@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { Plus, MessageSquare, Trash2, Download, Upload, Cpu, PenTool, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Sidebar({
   sessions,
@@ -32,12 +31,12 @@ export default function Sidebar({
   ];
 
   return (
-    <div className="w-72 h-full liquid-glass flex flex-col pt-6 z-10 shrink-0 border-r border-white/5">
+    <div className="w-72 h-full glass-panel flex flex-col pt-4 z-10 shrink-0">
       
       {/* Persona Selection */}
-      <div className="px-6 mb-6">
-        <label className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mb-3 block">AI Presence</label>
-        <div className="grid grid-cols-3 gap-2 bg-black/20 p-1.5 rounded-2xl border border-white/5 shadow-inner relative">
+      <div className="px-4 mb-4">
+        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">AI Persona</label>
+        <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/10">
           {personas.map((p) => {
             const Icon = p.icon;
             const active = persona === p.name;
@@ -45,19 +44,12 @@ export default function Sidebar({
               <button
                 key={p.name}
                 onClick={() => setPersona(p.name)}
-                className={`flex flex-col items-center justify-center py-2.5 rounded-xl transition-all relative z-10 ${
-                  active ? 'text-white droplet-btn !border-white/10' : 'text-slate-500 hover:text-slate-300'
+                className={`flex flex-col items-center justify-center py-2 rounded-lg transition-all ${
+                  active ? 'bg-indigo-600/80 text-white shadow-lg shadow-indigo-500/20' : 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
                 }`}
                 title={p.name}
               >
-                {active && (
-                  <motion.div 
-                    layoutId="activePersona"
-                    className="absolute inset-0 bg-white/5 blur-[2px] rounded-xl"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
-                <Icon size={16} className="relative z-20" />
+                <Icon size={16} />
               </button>
             )
           })}
@@ -65,43 +57,45 @@ export default function Sidebar({
       </div>
 
       {/* New Chat Button */}
-      <div className="px-6 mb-6">
+      <div className="px-4 mb-4">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-4 px-4 rounded-[1.5rem] transition-all font-medium border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-3.5 px-4 rounded-2xl shadow-lg transition-all font-medium border border-white/10 backdrop-blur-md"
         >
           <Plus size={18} />
-          <span className="font-semibold tracking-wide text-sm">New Session</span>
+          <span className="font-semibold tracking-wide">New Chat</span>
         </button>
       </div>
 
       {/* Sessions List */}
-      <div className="flex-1 overflow-y-auto px-4 space-y-2 mt-4 scrollbar-hide">
-        <div className="text-[10px] font-bold text-slate-500 mb-4 px-3 uppercase tracking-[0.2em]">Timeline</div>
+      <div className="flex-1 overflow-y-auto px-3 space-y-1 mt-2 scrollbar-hide">
+        <div className="text-xs font-bold text-slate-500 mb-3 px-3 uppercase tracking-wider">History</div>
         {sessions.map((session) => (
           <div
             key={session.id}
             onClick={() => onSelectSession(session.id)}
-            className={`group flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all duration-300 border ${
+            className={`group flex items-center justify-between p-3.5 rounded-xl cursor-pointer transition-all duration-300 border border-transparent ${
               currentSessionId === session.id
-                ? 'bg-white/10 text-white border-white/20 shadow-[0_4px_15px_rgba(0,0,0,0.2)]'
-                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 border-transparent'
+                ? 'bg-white/10 text-white border-white/20 shadow-inner'
+                : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 hover:border-white/5'
             }`}
           >
             <div className="flex items-center gap-3 overflow-hidden">
-              <MessageSquare size={16} className={currentSessionId === session.id ? 'text-indigo-400' : 'text-slate-600'} />
-              <div className="truncate text-sm font-medium">{session.title || 'New Chat'}</div>
+              <MessageSquare size={18} className={`flex-shrink-0 ${currentSessionId === session.id ? 'text-indigo-400' : 'text-slate-500'}`} />
+              <div className="truncate text-[15px] font-medium leading-tight">{session.title || 'New Chat'}</div>
             </div>
             <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity gap-1">
               <button
                 onClick={(e) => { e.stopPropagation(); onExport(session); }}
-                className="p-1.5 hover:bg-white/10 rounded-lg hover:text-indigo-300 transition-colors"
+                className="p-1.5 hover:bg-white/10 rounded-md hover:text-indigo-300 transition-colors"
+                title="Export"
               >
                 <Download size={14} />
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onDeleteSession(session.id); }}
-                className="p-1.5 hover:bg-white/10 rounded-lg hover:text-red-400 transition-colors"
+                className="p-1.5 hover:bg-white/10 rounded-md hover:text-red-400 transition-colors"
+                title="Delete"
               >
                 <Trash2 size={14} />
               </button>
@@ -111,14 +105,14 @@ export default function Sidebar({
       </div>
 
       {/* Footer controls */}
-      <div className="p-6 border-t border-white/5 bg-black/10">
+      <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-3xl">
         <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="w-full flex items-center gap-3 text-slate-500 hover:text-white p-3.5 rounded-xl hover:bg-white/5 transition-all text-[13px] font-medium border border-transparent hover:border-white/5"
+          className="w-full flex items-center gap-3 text-slate-400 hover:text-white p-3 rounded-xl hover:bg-white/5 transition-all text-sm font-semibold tracking-wide border border-transparent hover:border-white/10"
         >
-          <Upload size={16} />
-           Import Backup
+          <Upload size={18} />
+           Import Session
         </button>
       </div>
     </div>

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
 import InputBar from './components/InputBar';
 import { chatStorage } from './services/chatStorage';
 import { useVoiceControl } from './hooks/useVoiceControl';
-import liquidBg from './assets/liquid-bg.png';
 
 function App() {
   const [sessions, setSessions] = useState([]);
@@ -149,52 +147,14 @@ function App() {
 
   useEffect(() => { if (!isSpeaking) setSpeakingText(null); }, [isSpeaking]);
 
-  const personaColors = {
-    'Assistant': { primary: '#334155', accent: '#1e293b' },
-    'Coder Wizard': { primary: '#312e81', accent: '#1e1b4b' },
-    'Creative Writer': { primary: '#581c87', accent: '#3b0764' }
-  };
-
-  const currentColors = personaColors[persona] || personaColors['Assistant'];
-
   return (
-    <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
+    <div className="flex h-screen w-screen bg-black text-slate-100 font-sans relative overflow-hidden">
       
-      {/* Liquid Water SVG Filter Registry */}
-      <svg className="hidden">
-        <defs>
-          <filter id="liquid-filter">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur" />
-            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 45 -15" result="goo" />
-            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
-          </filter>
-          <filter id="organic-edge">
-            <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" />
-          </filter>
-        </defs>
-      </svg>
-
-      {/* Hyper-Realistic Background Engine */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <img 
-          src={liquidBg} 
-          className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity scale-[1.1] blur-[1px]" 
-          alt="Liquid Background" 
-        />
-        <div className="absolute inset-0 bg-[#0a0c10]/40 backdrop-blur-[2px]" />
-        
-        <motion.div 
-          animate={{ background: `radial-gradient(circle, ${currentColors.primary} 0%, transparent 70%)` }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
-          className="water-glob w-[900px] h-[900px] -top-[20%] -left-[10%]" 
-        />
-        <motion.div 
-          animate={{ background: `radial-gradient(circle, ${currentColors.accent} 0%, transparent 70%)` }}
-          transition={{ duration: 1.5, ease: "easeInOut", delay: 0.2 }}
-          className="water-glob w-[700px] h-[700px] -bottom-[10%] -right-[10%]" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0f1115]/50 to-[#0f1115]" />
+      {/* Liquid Glass True Background Animation */}
+      <div className="absolute inset-0 z-0 bg-transparent overflow-hidden">
+        <div className="ambient-blob bg-indigo-600/30 w-[600px] h-[600px] top-[-10%] left-[-10%]" style={{ animationDelay: '0s' }} />
+        <div className="ambient-blob bg-purple-600/30 w-[500px] h-[500px] bottom-[-20%] right-[-10%]" style={{ animationDelay: '2s', animationDirection: 'reverse' }} />
+        <div className="ambient-blob bg-blue-600/20 w-[800px] h-[800px] top-[20%] left-[30%]" style={{ animationDelay: '4s' }} />
       </div>
 
       {/* Main Layout Overlay */}
@@ -211,17 +171,16 @@ function App() {
           setPersona={setPersona}
         />
         
-        <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-[#0f1115]/30 backdrop-blur-[4px]">
+        <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#020617]/40 backdrop-blur-[2px]">
           <ChatWindow 
             messages={messages} 
             onSpeak={handleSpeak}
             onStopSpeak={handleStopSpeak}
             speakingText={speakingText}
             onQuickAction={handleSubmit}
-            persona={persona}
           />
           
-          <div className="pt-12 pb-6 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0c10] via-[#0a0c10]/80 to-transparent">
+          <div className="pt-12 pb-6 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-black via-black/80 to-transparent">
             <InputBar 
               input={input}
               setInput={setInput}
