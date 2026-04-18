@@ -116,7 +116,7 @@ export default function Sidebar({
       </div>
 
       {/* Footer controls */}
-      <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-3xl">
+      <div className="p-4 border-t border-white/10 bg-[#0f1115]/80 backdrop-blur-3xl">
         <input type="file" accept=".json" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
         <button
           onClick={() => fileInputRef.current?.click()}

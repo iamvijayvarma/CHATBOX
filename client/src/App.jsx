@@ -150,24 +150,24 @@ function App() {
   useEffect(() => { if (!isSpeaking) setSpeakingText(null); }, [isSpeaking]);
 
   const personaColors = {
-    'Assistant': { primary: '#312e8166', accent: '#1e1b4b66' },
-    'Coder Wizard': { primary: '#1e3a8a66', accent: '#17255466' },
-    'Creative Writer': { primary: '#581c8766', accent: '#2e106566' }
+    'Assistant': { primary: '#47556944', accent: '#1e293b44' },
+    'Coder Wizard': { primary: '#33415544', accent: '#0f172a44' },
+    'Creative Writer': { primary: '#64748b44', accent: '#33415544' }
   };
 
   const currentColors = personaColors[persona] || personaColors['Assistant'];
 
   return (
-    <div className="flex h-screen w-screen bg-black text-slate-100 font-sans relative overflow-hidden">
+    <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
       
       {/* Liquid Glass Background Logic */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <img 
           src={liquidBg} 
-          className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-screen scale-[1.05]" 
+          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity scale-[1.05]" 
           alt="Base Texture" 
         />
-        <div className="absolute inset-0 bg-[#020617]/60" /> {/* Dark overlay to Blend */}
+        <div className="absolute inset-0 bg-[#0a0c10]/70" /> {/* Dark grey overlay */}
         
         <motion.div 
           animate={{ background: `radial-gradient(circle, ${currentColors.primary} 0%, transparent 70%)` }}
@@ -211,7 +211,7 @@ function App() {
           setPersona={setPersona}
         />
         
-        <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#020617]/40 backdrop-blur-[2px]">
+        <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#0a0c10]/60 backdrop-blur-[2px]">
           <ChatWindow 
             messages={messages} 
             onSpeak={handleSpeak}
@@ -220,7 +220,7 @@ function App() {
             onQuickAction={handleSubmit}
           />
           
-          <div className="pt-12 pb-6 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-black via-black/80 to-transparent">
+          <div className="pt-12 pb-6 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0c10] via-[#0a0c10]/95 to-transparent">
             <InputBar 
               input={input}
               setInput={setInput}
