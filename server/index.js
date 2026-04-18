@@ -52,14 +52,14 @@ app.post('/api/chat', async (req, res) => {
       console.log('Falling back to Contextual Mock Mode.');
       
       const lastUserMessage = messages[messages.length - 1]?.content || '';
-      let mockStr = `**[LIQUID DEMO MODE - ${persona.toUpperCase()}]**\n\n`;
+      let mockStr = `**[DINGO AI - ${persona.toUpperCase()}]**\n\n`;
 
       if (persona === 'Coder Wizard') {
-        mockStr += `👩‍💻 *Beep boop! Analyzing your request...*\n\nSince no API key is set, I've generated a simulated response for: "${lastUserMessage.slice(0, 30)}..."\n\n\`\`\`javascript\n// Mock Code Generated\nfunction demo() {\n  console.log("This is a simulated response in ${persona} mode.");\n  return true;\n}\n\`\`\`\n\n*(Add your OpenAI key to .env for real code!)*`;
+        mockStr += `👩‍💻 *Beep boop! DINGO AI core analyzing...*\n\nSince no API key is set, I've generated a simulated response for: "${lastUserMessage.slice(0, 30)}..."\n\n\`\`\`javascript\n// DINGO Mock Engine\nfunction demo() {\n  console.log("DINGO AI optimized code for ${persona}.");\n  return true;\n}\n\`\`\`\n\n*(Add your OpenAI key to .env for real intelligence!)*`;
       } else if (persona === 'Creative Writer') {
-        mockStr += `✨ *The ink flows onto the digital parchment...*\n\nYour prompt about "${lastUserMessage.slice(0, 30)}..." inspired a momentary vision! \n\n"In a world where gradients float like clouds and glass is as thick as moonlight, your message echoes through the source code..."\n\n*(To continue this story with GPT-4, update your API key!)*`;
+        mockStr += `✨ *DINGO AI's artistic processors are humming...*\n\nYour prompt about "${lastUserMessage.slice(0, 30)}..." inspired a vision! \n\n"The digital dingo leaves tracks through the source code, weaving a tale from the bits and bytes of your imagination..."\n\n*(To continue this story with GPT-4, update your API key!)*`;
       } else {
-        mockStr += `🤖 *Processing: "${lastUserMessage.slice(0, 50)}..."*\n\nI am currently in **Liquid Demo Mode** because the API key is missing. However, I can still confirm that the UI is fully reactive! \n\n**Next Steps:**\n1. Find your API key at platform.openai.com\n2. Paste it into \`server/.env\`\n3. Restart the server.\n\nKeep exploring this beautiful interface!`;
+        mockStr += `🤖 *DINGO AI Processing: "${lastUserMessage.slice(0, 50)}..."*\n\nI am currently in **DINGO AI Demo Mode** because the API key is missing. However, I can still confirm that the UI is fully reactive! \n\n**Next Steps:**\n1. Find your API key at platform.openai.com\n2. Paste it into \`server/.env\`\n3. Restart the server.\n\nKeep exploring DINGO AI!`;
       }
       
       const words = mockStr.split(/([ \n]+)/);

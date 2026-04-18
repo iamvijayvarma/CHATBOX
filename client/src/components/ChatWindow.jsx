@@ -31,7 +31,7 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
                 <span className="text-5xl drop-shadow-2xl">💧</span>
               </div>
               <h2 className="text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-500">
-                Fluent Liquid
+                DINGO AI
               </h2>
               <p className="text-slate-500 font-medium tracking-wide">Select an organic probe to begin</p>
             </div>

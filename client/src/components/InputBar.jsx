@@ -33,7 +33,7 @@ export default function InputBar({ input, setInput, onSubmit, isListening, toggl
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Type a message..."
+          placeholder="Message DINGO AI..."
           className="w-full max-h-[150px] bg-transparent text-slate-100 placeholder-slate-500 resize-none outline-none py-4 text-[15px] font-medium"
           rows={1}
         />
@@ -69,7 +69,7 @@ export default function InputBar({ input, setInput, onSubmit, isListening, toggl
         </div>
       </div>
       <div className="text-center mt-4 text-[10px] text-slate-600 font-bold uppercase tracking-[0.2em] opacity-50">
-        Organic Intelligence Engine • Liquid v2.1
+        DINGO AI Intelligence Engine • Liquid v2.1
       </div>
     </div>
   );
