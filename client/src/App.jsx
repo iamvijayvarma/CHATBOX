@@ -1,158 +1,99 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
 import InputBar from './components/InputBar';
-import { chatStorage } from './services/chatStorage';
+import { useChat } from './hooks/useChat';
 import { useVoiceControl } from './hooks/useVoiceControl';
 import liquidBg from './assets/liquid-bg.png';
+import { motion } from 'framer-motion';
 
 function App() {
-  const [sessions, setSessions] = useState([]);
-  const [currentSessionId, setCurrentSessionId] = useState(null);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [abortController, setAbortController] = useState(null);
-  const [speakingText, setSpeakingText] = useState(null);
-  const [persona, setPersona] = useState('Assistant');
-
-  const { isListening, toggleListening, isSpeaking, speakText, stopSpeaking } = useVoiceControl((text) => {
-    setInput((prev) => prev + (prev ? ' ' : '') + text);
+  const [sessions, setSessions] = useState(() => {
+    const saved = localStorage.getItem('chat_sessions');
+    return saved ? JSON.parse(saved) : [{ id: '1', messages: [], title: 'New Chat', date: new Date().toISOString() }];
   });
+  const [currentSessionId, setCurrentSessionId] = useState('1');
+  const [input, setInput] = useState('');
+  const [persona, setPersona] = useState('Assistant');
+  const [user, setUser] = useState(null);
+
+  const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
+  const messages = currentSession.messages;
+
+  const { sendMessage, isLoading, abortController, setAbortController, setIsLoading } = useChat();
+  const { isListening, toggleListening, isSpeaking, speakText, stopSpeaking } = useVoiceControl();
+  const [speakingText, setSpeakingText] = useState(null);
 
   useEffect(() => {
-    const loadedSessions = chatStorage.getSessions();
-    setSessions(loadedSessions);
-    if (loadedSessions.length > 0) {
-      setCurrentSessionId(loadedSessions[0].id);
-    } else {
-      handleNewChat();
-    }
-  }, []);
-
-  const currentSession = sessions.find((s) => s.id === currentSessionId);
-  const messages = currentSession?.messages || [];
+    localStorage.setItem('chat_sessions', JSON.stringify(sessions));
+  }, [sessions]);
 
   const handleNewChat = () => {
-    const newSession = chatStorage.createSession();
-    setSessions(chatStorage.getSessions());
+    const newSession = {
+      id: Date.now().toString(),
+      messages: [],
+      title: 'New Chat',
+      date: new Date().toISOString()
+    };
+    setSessions([newSession, ...sessions]);
     setCurrentSessionId(newSession.id);
   };
 
   const handleDeleteSession = (id) => {
-    const newSessions = chatStorage.deleteSession(id);
-    setSessions(newSessions);
-    if (currentSessionId === id) {
-      setCurrentSessionId(newSessions.length > 0 ? newSessions[0].id : null);
-      if (newSessions.length === 0) handleNewChat();
-    }
-  };
-
-  const handleExport = (session) => chatStorage.exportChat(session, 'json');
-
-  const handleImport = (jsonString) => {
-    const newSession = chatStorage.importChat(jsonString);
-    if (newSession) {
-      setSessions(chatStorage.getSessions());
-      setCurrentSessionId(newSession.id);
+    const filtered = sessions.filter(s => s.id !== id);
+    if (filtered.length === 0) {
+      handleNewChat();
     } else {
-      alert('Failed to import chat.');
+      setSessions(filtered);
+      if (currentSessionId === id) setCurrentSessionId(filtered[0].id);
     }
   };
 
-  const handleSubmit = async (overrideInput = null) => {
-    const finalInput = overrideInput || input;
-    if (!finalInput.trim() || isLoading) return;
+  const handleExport = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(sessions));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", `dingo_chats_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+  };
 
-    let targetSessionId = currentSessionId;
-    if (!currentSessionId) {
-       const newSession = chatStorage.createSession();
-       setSessions(chatStorage.getSessions());
-       targetSessionId = newSession.id;
-       setCurrentSessionId(targetSessionId);
-    }
+  const handleSubmit = async (quickPrompt = null) => {
+    const text = quickPrompt || input;
+    if (!text.trim() || isLoading) return;
 
-    const currentSess = chatStorage.getSessions().find(s => s.id === targetSessionId);
-
-    const userMessage = { role: 'user', content: finalInput.trim() };
-    const updatedMessages = [...currentSess.messages, userMessage];
-
-    let titleUpdate = currentSess.title;
-    if (currentSess.messages.length === 0) {
-      titleUpdate = finalInput.trim().slice(0, 30) + '...';
-    }
-
-    chatStorage.updateSession(targetSessionId, { messages: updatedMessages, title: titleUpdate });
-    setSessions(chatStorage.getSessions());
-    if (!overrideInput) setInput('');
-    setIsLoading(true);
-
-    const ctrl = new AbortController();
-    setAbortController(ctrl);
-
-    const assistantMessage = { role: 'assistant', content: '' };
-    updatedMessages.push(assistantMessage);
-
-    chatStorage.updateSession(targetSessionId, { messages: updatedMessages });
-    setSessions(chatStorage.getSessions());
+    const userMessage = { role: 'user', content: text };
+    const updatedSessions = sessions.map(s => 
+      s.id === currentSessionId 
+        ? { ...s, messages: [...s.messages, userMessage], title: s.messages.length === 0 ? text.slice(0, 30) : s.title }
+        : s
+    );
+    setSessions(updatedSessions);
+    setInput('');
 
     try {
-      const response = await fetch('http://localhost:3000/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-           messages: updatedMessages.slice(0, -1),
-           persona 
-        }),
-        signal: ctrl.signal
+      const response = await sendMessage(text, messages, (chunk) => {
+        setSessions(prev => prev.map(s => {
+          if (s.id === currentSessionId) {
+            const lastMsg = s.messages[s.messages.length - 1];
+            if (lastMsg && lastMsg.role === 'assistant') {
+              return { ...s, messages: [...s.messages.slice(0, -1), { ...lastMsg, content: lastMsg.content + chunk }] };
+            } else {
+              return { ...s, messages: [...s.messages, { role: 'assistant', content: chunk }] };
+            }
+          }
+          return s;
+        }));
       });
-
-      if (!response.ok) throw new Error('API Error');
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let finalContent = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n');
-
-        for (const line of lines) {
-           if (line.trim().startsWith('data: ')) {
-             const dataStr = line.trim().substring(6);
-             if (dataStr === '[DONE]') break;
-             try {
-                const data = JSON.parse(dataStr);
-                if (data.content) {
-                  finalContent += data.content;
-                  updatedMessages[updatedMessages.length - 1].content = finalContent;
-                  chatStorage.updateSession(targetSessionId, { messages: updatedMessages });
-                  setSessions(chatStorage.getSessions());
-                }
-             } catch (e) { }
-           }
-        }
-      }
     } catch (error) {
       if (error.name !== 'AbortError') console.error("Chat streaming error:", error);
     } finally {
       setIsLoading(false);
       setAbortController(null);
     }
-  };
-
-  const [user, setUser] = useState(null);
-
-  const handleLogin = () => {
-    // Mocking Google Login for now
-    setUser({
-      name: 'Bingo User',
-      email: 'user@example.com',
-      avatar: null
-    });
   };
 
   const handleSpeak = (text) => { setSpeakingText(text); speakText(text); };
@@ -167,75 +108,77 @@ function App() {
   };
 
   const currentColors = personaColors[persona] || personaColors['Assistant'];
+  const GOOGLE_CLIENT_ID = "1098555132515-p5iit06c7i0h8a98q1e58206qip40p10.apps.googleusercontent.com"; 
 
   return (
-    <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
-      
-      {/* Liquid Glass Background Logic */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <img 
-          src={liquidBg} 
-          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity scale-[1.05]" 
-          alt="Base Texture" 
-        />
-        <div className="absolute inset-0 bg-[#0a0c10]/70" /> {/* Dark grey overlay */}
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
         
-        <motion.div 
-          animate={{ background: `radial-gradient(circle, ${currentColors.primary} 0%, transparent 70%)` }}
-          transition={{ duration: 2, ease: "easeInOut" }}
-          className="ambient-blob w-[600px] h-[600px] top-[-10%] left-[-10%]" 
-        />
-        <motion.div 
-          animate={{ background: `radial-gradient(circle, ${currentColors.accent} 0%, transparent 70%)` }}
-          transition={{ duration: 2.5, ease: "easeInOut", delay: 0.2 }}
-          className="ambient-blob w-[500px] h-[500px] bottom-[-20%] right-[-10%]" 
-        />
-        <motion.div 
-          animate={{ background: `radial-gradient(circle, #3b82f633 0%, transparent 70%)` }}
-          transition={{ duration: 3, ease: "easeInOut" }}
-          className="ambient-blob w-[800px] h-[800px] top-[20%] left-[30%]" 
-        />
-      </div>
+        {/* Liquid Glass Background Logic */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <img 
+            src={liquidBg} 
+            className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity scale-[1.05]" 
+            alt="Base Texture" 
+          />
+          <div className="absolute inset-0 bg-[#0a0c10]/70" />
+          
+          <motion.div 
+            animate={{ background: radialGradient(currentColors.primary) }}
+            transition={{ duration: 2, ease: "easeInOut" }}
+            className="ambient-blob w-[600px] h-[600px] top-[-10%] left-[-10%]" 
+          />
+          <motion.div 
+            animate={{ background: radialGradient(currentColors.accent) }}
+            transition={{ duration: 2.5, ease: "easeInOut", delay: 0.2 }}
+            className="ambient-blob w-[500px] h-[500px] bottom-[-20%] right-[-10%]" 
+          />
+          <motion.div 
+            animate={{ background: `radial-gradient(circle, #3b82f633 0%, transparent 70%)` }}
+            transition={{ duration: 3, ease: "easeInOut" }}
+            className="ambient-blob w-[800px] h-[800px] top-[20%] left-[30%]" 
+          />
+        </div>
 
-      {/* Main Layout Overlay */}
-
-      {/* Main Layout Overlay */}
-      <div className="flex h-full w-full z-10 relative">
-        <Sidebar 
-          sessions={sessions}
-          currentSessionId={currentSessionId}
-          onSelectSession={setCurrentSessionId}
-          onNewChat={handleNewChat}
-          onDeleteSession={handleDeleteSession}
-          onExport={handleExport}
-          user={user}
-          onLogin={handleLogin}
-        />
-        
-        <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#0a0c10]/60 backdrop-blur-[2px]">
-          <ChatWindow 
-            messages={messages} 
-            onSpeak={handleSpeak}
-            onStopSpeak={handleStopSpeak}
-            speakingText={speakingText}
-            onQuickAction={handleSubmit}
+        <div className="flex h-full w-full z-10 relative">
+          <Sidebar 
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+            onSelectSession={setCurrentSessionId}
+            onNewChat={handleNewChat}
+            onDeleteSession={handleDeleteSession}
+            onExport={handleExport}
+            user={user}
+            setUser={setUser}
           />
           
-          <div className="pt-12 pb-3 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0c10] via-[#0a0c10]/95 to-transparent">
-            <InputBar 
-              input={input}
-              setInput={setInput}
-              onSubmit={() => handleSubmit()}
-              isListening={isListening}
-              toggleListening={toggleListening}
-              isLoading={isLoading}
-              abortController={abortController}
+          <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#0a0c10]/60 backdrop-blur-[2px]">
+            <ChatWindow 
+              messages={messages} 
+              onSpeak={handleSpeak}
+              onStopSpeak={handleStopSpeak}
+              speakingText={speakingText}
+              onQuickAction={handleSubmit}
             />
-          </div>
-        </main>
+            
+            <div className="pt-12 pb-3 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0c10] via-[#0a0c10]/95 to-transparent">
+              <InputBar 
+                input={input}
+                setInput={setInput}
+                onSubmit={() => handleSubmit()}
+                isListening={isListening}
+                toggleListening={toggleListening}
+                isLoading={isLoading}
+                abortController={abortController}
+              />
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </GoogleOAuthProvider>
   );
 }
+
+const radialGradient = (color) => `radial-gradient(circle, ${color} 0%, transparent 70%)`;
 
 export default App;
