@@ -53,7 +53,7 @@ export default function Sidebar({
                 {active && (
                   <motion.div 
                     layoutId="activePersonaCircle"
-                    className="absolute inset-0 icon-droplet"
+                    className="absolute inset-0 icon-droplet bg-sky-500/30 shadow-[0_0_15px_rgba(14,165,233,0.5)]"
                     transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
                   />
                 )}
