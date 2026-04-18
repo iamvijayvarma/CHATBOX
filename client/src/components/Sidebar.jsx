@@ -25,6 +25,15 @@ export default function Sidebar({
       <div className="px-4 mb-4">
         <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">AI Persona</label>
         <div className="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-xl border border-white/10 relative">
+          {/* Smooth Slider Indicator */}
+          <motion.div 
+            className="absolute h-[calc(100%-8px)] w-[calc(33.33%-4px)] icon-droplet bg-sky-500/30 shadow-[0_0_15px_rgba(14,165,233,0.5)] z-0"
+            animate={{ 
+              left: persona === 'Assistant' ? '4px' : persona === 'Coder Wizard' ? 'calc(33.33% + 2px)' : 'calc(66.66% + 1px)' 
+            }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+          />
+
           {personas.map((p) => {
             const Icon = p.icon;
             const active = persona === p.name;
@@ -37,13 +46,6 @@ export default function Sidebar({
                 }`}
                 title={p.name}
               >
-                {active && (
-                  <motion.div 
-                    layoutId="activePersonaCircle"
-                    className="absolute inset-0 icon-droplet bg-sky-500/30 shadow-[0_0_15px_rgba(14,165,233,0.5)]"
-                    transition={{ type: "spring", bounce: 0.25, duration: 0.6 }}
-                  />
-                )}
                 <div className={`w-8 h-8 flex items-center justify-center relative z-20`}>
                   <Icon size={16} />
                 </div>
