@@ -17,13 +17,13 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
   ];
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 md:px-12 py-8 scrollbar-hide z-10 w-full relative">
-      <div className="max-w-4xl mx-auto flex flex-col">
+    <div className="flex-1 overflow-y-auto px-4 md:px-12 pt-8 pb-48 scrollbar-hide z-10 w-full relative">
+      <div className="max-w-4xl mx-auto flex flex-col h-full">
         {messages.length === 0 ? (
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="h-full flex flex-col items-center justify-center mt-24 space-y-12"
+            className="flex-1 flex flex-col items-center justify-center space-y-12"
           >
             <div className="text-center space-y-4">
               <div className="w-24 h-24 mx-auto bg-gradient-to-br from-indigo-500/30 to-purple-500/30 rounded-[2rem] flex items-center justify-center shadow-[0_0_60px_rgba(99,102,241,0.4)] border border-white/20 backdrop-blur-xl rotate-3">
@@ -71,17 +71,19 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
             </motion.div>
           </motion.div>
         ) : (
-          messages.map((message, index) => (
-            <MessageBubble 
-              key={index} 
-              message={message} 
-              onSpeak={onSpeak} 
-              onStopSpeak={onStopSpeak}
-              isSpeakingThis={speakingText === message.content}
-            />
-          ))
+          <div className="flex flex-col space-y-2">
+            {messages.map((message, index) => (
+              <MessageBubble 
+                key={index} 
+                message={message} 
+                onSpeak={onSpeak} 
+                onStopSpeak={onStopSpeak}
+                isSpeakingThis={speakingText === message.content}
+              />
+            ))}
+            <div ref={endRef} />
+          </div>
         )}
-        <div ref={endRef} className="h-10" />
       </div>
     </div>
   );
