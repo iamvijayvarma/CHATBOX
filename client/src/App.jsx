@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
 import Sidebar from './components/Sidebar';
 import ChatWindow from './components/ChatWindow';
 import InputBar from './components/InputBar';
@@ -16,14 +15,19 @@ function App() {
   });
   const [currentSessionId, setCurrentSessionId] = useState('1');
   const [input, setInput] = useState('');
-  const [persona, setPersona] = useState('Assistant');
   const [user, setUser] = useState(null);
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
   const messages = currentSession.messages;
 
   const { sendMessage, isLoading, abortController, setAbortController, setIsLoading } = useChat();
-  const { isListening, toggleListening, isSpeaking, speakText, stopSpeaking } = useVoiceControl();
+  
+  // Connect Voice Control to handlesubmit
+  const { isListening, toggleListening, isSpeaking, speakText, stopSpeaking } = useVoiceControl((text) => {
+    setInput(text);
+    handleSubmit(text);
+  });
+  
   const [speakingText, setSpeakingText] = useState(null);
 
   useEffect(() => {
@@ -101,20 +105,13 @@ function App() {
 
   useEffect(() => { if (!isSpeaking) setSpeakingText(null); }, [isSpeaking]);
 
-  const personaColors = {
-    'Assistant': { primary: '#0ea5e933', accent: '#0369a133' },
-    'Coder Wizard': { primary: '#33415544', accent: '#0f172a44' },
-    'Creative Writer': { primary: '#64748b44', accent: '#33415544' }
-  };
-
-  const currentColors = personaColors[persona] || personaColors['Assistant'];
   const GOOGLE_CLIENT_ID = "1098555132515-p5iit06c7i0h8a98q1e58206qip40p10.apps.googleusercontent.com"; 
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
         
-        {/* Liquid Glass Background Logic */}
+        {/* Liquid Glass Background */}
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <img 
             src={liquidBg} 
@@ -124,17 +121,17 @@ function App() {
           <div className="absolute inset-0 bg-[#0a0c10]/70" />
           
           <motion.div 
-            animate={{ background: radialGradient(currentColors.primary) }}
+            animate={{ background: 'radial-gradient(circle, #0ea5e933 0%, transparent 70%)' }}
             transition={{ duration: 2, ease: "easeInOut" }}
             className="ambient-blob w-[600px] h-[600px] top-[-10%] left-[-10%]" 
           />
           <motion.div 
-            animate={{ background: radialGradient(currentColors.accent) }}
+            animate={{ background: 'radial-gradient(circle, #0369a133 0%, transparent 70%)' }}
             transition={{ duration: 2.5, ease: "easeInOut", delay: 0.2 }}
             className="ambient-blob w-[500px] h-[500px] bottom-[-20%] right-[-10%]" 
           />
           <motion.div 
-            animate={{ background: `radial-gradient(circle, #3b82f633 0%, transparent 70%)` }}
+            animate={{ background: 'radial-gradient(circle, #3b82f633 0%, transparent 70%)' }}
             transition={{ duration: 3, ease: "easeInOut" }}
             className="ambient-blob w-[800px] h-[800px] top-[20%] left-[30%]" 
           />
@@ -178,7 +175,5 @@ function App() {
     </GoogleOAuthProvider>
   );
 }
-
-const radialGradient = (color) => `radial-gradient(circle, ${color} 0%, transparent 70%)`;
 
 export default App;

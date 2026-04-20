@@ -11,6 +11,7 @@ app.use(express.json());
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'missing_key',
+  baseURL: process.env.OPENAI_BASE_URL || undefined,
 });
 
 app.post('/api/chat', async (req, res) => {
@@ -48,6 +49,7 @@ app.post('/api/chat', async (req, res) => {
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (error) {
+    console.log('Chat API Error:', error);
     if (error.status === 401 || process.env.OPENAI_API_KEY === undefined || process.env.OPENAI_API_KEY === 'your_openai_api_key_here') {
       console.log('Falling back to Contextual Mock Mode.');
       
@@ -96,6 +98,10 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}
+
+module.exports = app;
