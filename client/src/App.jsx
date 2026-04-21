@@ -105,7 +105,7 @@ function App() {
 
   useEffect(() => { if (!isSpeaking) setSpeakingText(null); }, [isSpeaking]);
 
-  const GOOGLE_CLIENT_ID = "1098555132515-p5iit06c7i0h8a98q1e58206qip40p10.apps.googleusercontent.com"; 
+  const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID; 
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
