@@ -5,6 +5,7 @@ import ChatWindow from './components/ChatWindow';
 import InputBar from './components/InputBar';
 import { useChat } from './hooks/useChat';
 import { useVoiceControl } from './hooks/useVoiceControl';
+import logo from './assets/logo.png';
 import liquidBg from './assets/liquid-bg.png';
 import { motion } from 'framer-motion';
 
@@ -115,14 +116,21 @@ function App() {
   const mainLayout = (
     <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
       
-      {/* Mobile Menu Toggle */}
-      <div className="absolute top-4 left-4 z-50 md:hidden">
+      {/* Mobile Top Bar */}
+      <div className="absolute top-0 left-0 right-0 h-16 z-50 md:hidden flex items-center px-4 bg-[#0a0c10]/40 backdrop-blur-md border-b border-white/5">
         <button 
           onClick={() => setIsSidebarOpen(true)}
-          className="p-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-slate-300 hover:text-white transition-all shadow-lg"
+          className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white transition-all shadow-md mr-4"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
         </button>
+        
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 p-0.5 shadow-lg shadow-indigo-500/10">
+            <img src={logo} className="w-full h-full object-contain" alt="Logo" />
+          </div>
+          <span className="text-sm font-bold tracking-tight text-white">DINGO AI</span>
+        </div>
       </div>
 
       {/* Mobile Overlay */}
