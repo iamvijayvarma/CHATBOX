@@ -17,6 +17,7 @@ function App() {
   const [currentSessionId, setCurrentSessionId] = useState('1');
   const [input, setInput] = useState('');
   const [user, setUser] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
   const messages = currentSession.messages;
