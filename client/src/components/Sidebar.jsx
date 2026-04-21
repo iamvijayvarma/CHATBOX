@@ -1,20 +1,12 @@
 import { useGoogleLogin } from '@react-oauth/google';
 import { Plus, MessageSquare, Trash2, Download, Upload, LogIn, LogOut } from 'lucide-react';
 
-export default function Sidebar({
-  sessions,
-  currentSessionId,
-  onSelectSession,
-  onNewChat,
-  onDeleteSession,
-  onExport,
-  user,
-  setUser
-}) {
+function LoginSection({ isAuthEnabled, user, setUser }) {
+  if (!isAuthEnabled) return null;
+
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        // Send token to backend for verification
         const authRes = await fetch('/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -32,49 +24,64 @@ export default function Sidebar({
       }
     },
   });
+
+  return (
+    <div className="px-4 mb-6">
+      {!user ? (
+        <button 
+          onClick={() => login()}
+          className="w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white p-3.5 rounded-2xl border border-white/10 transition-all group overflow-hidden relative shadow-lg"
+        >
+          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
+            <LogIn size={18} className="text-sky-400" />
+          </div>
+          <div className="flex flex-col items-start translate-y-[1px]">
+            <span className="text-[15px] font-bold tracking-tight">Log in</span>
+            <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-widest">With Google</span>
+          </div>
+        </button>
+      ) : (
+        <div className="w-full group/card bg-white/[0.02] p-3 rounded-2xl border border-white/5 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+              {user.avatar ? (
+                <img src={user.avatar} className="w-10 h-10 rounded-full border border-sky-500/30 shadow-[0_0_10px_rgba(14,165,233,0.3)]" alt="Avatar" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center border border-sky-500/30">
+                  <span className="text-sky-400 font-bold">{user.name[0]}</span>
+                </div>
+              )}
+              <div className="flex flex-col overflow-hidden flex-1">
+                <span className="text-sm font-bold text-white truncate">{user.name}</span>
+                <span className="text-[10px] text-slate-500 truncate">{user.email}</span>
+              </div>
+              <button 
+                onClick={() => setUser(null)}
+                className="p-2 hover:bg-white/10 rounded-xl text-slate-500 hover:text-red-400 transition-all"
+                title="Logout"
+              >
+                <LogOut size={16} />
+              </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Sidebar({
+  sessions,
+  currentSessionId,
+  onSelectSession,
+  onNewChat,
+  onDeleteSession,
+  onExport,
+  user,
+  setUser,
+  isAuthEnabled
+}) {
   return (
     <div className="w-72 h-full glass-panel flex flex-col pt-4 z-10 shrink-0">
-      
-      {/* Login / Profile Section */}
-      <div className="px-4 mb-6">
-        {!user ? (
-          <button 
-            onClick={() => login()}
-            className="w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white p-3.5 rounded-2xl border border-white/10 transition-all group overflow-hidden relative shadow-lg"
-          >
-            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
-               <LogIn size={18} className="text-sky-400" />
-            </div>
-            <div className="flex flex-col items-start translate-y-[1px]">
-              <span className="text-[15px] font-bold tracking-tight">Log in</span>
-              <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-widest">With Google</span>
-            </div>
-          </button>
-        ) : (
-          <div className="w-full group/card bg-white/[0.02] p-3 rounded-2xl border border-white/5 flex flex-col gap-3">
-             <div className="flex items-center gap-3">
-                {user.avatar ? (
-                  <img src={user.avatar} className="w-10 h-10 rounded-full border border-sky-500/30 shadow-[0_0_10px_rgba(14,165,233,0.3)]" alt="Avatar" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-sky-500/20 flex items-center justify-center border border-sky-500/30">
-                     <span className="text-sky-400 font-bold">{user.name[0]}</span>
-                  </div>
-                )}
-                <div className="flex flex-col overflow-hidden flex-1">
-                  <span className="text-sm font-bold text-white truncate">{user.name}</span>
-                  <span className="text-[10px] text-slate-500 truncate">{user.email}</span>
-                </div>
-                <button 
-                  onClick={() => setUser(null)}
-                  className="p-2 hover:bg-white/10 rounded-xl text-slate-500 hover:text-red-400 transition-all"
-                  title="Logout"
-                >
-                  <LogOut size={16} />
-                </button>
-             </div>
-          </div>
-        )}
-      </div>
+      <LoginSection isAuthEnabled={isAuthEnabled} user={user} setUser={setUser} />
       
       {/* New Chat Button */}
       <div className="px-4 mb-4">
