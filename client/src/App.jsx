@@ -115,6 +115,24 @@ function App() {
   const mainLayout = (
     <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
       
+      {/* Mobile Menu Toggle */}
+      <div className="absolute top-4 left-4 z-50 md:hidden">
+        <button 
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-3 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-slate-300 hover:text-white transition-all shadow-lg"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Liquid Glass Background */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <img 
@@ -146,12 +164,14 @@ function App() {
           sessions={sessions}
           currentSessionId={currentSessionId}
           onSelectSession={setCurrentSessionId}
-          onNewChat={handleNewChat}
+          onNewChat={(...args) => { handleNewChat(...args); setIsSidebarOpen(false); }}
           onDeleteSession={handleDeleteSession}
           onExport={handleExport}
           user={user}
           setUser={setUser}
           isAuthEnabled={isAuthEnabled}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
         />
         
         <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#0a0c10]/60 backdrop-blur-[2px]">
