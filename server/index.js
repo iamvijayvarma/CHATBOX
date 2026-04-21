@@ -3,11 +3,42 @@ const cors = require('cors');
 require('dotenv').config();
 const { OpenAI } = require('openai');
 
+const { OAuth2Client } = require('google-auth-library');
 const app = express();
 const port = process.env.PORT || 3000;
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 app.use(cors());
 app.use(express.json());
+
+// Verify Google Token Endpoint
+app.post('/api/auth/google', async (req, res) => {
+  const { accessToken } = req.body;
+  if (!accessToken) return res.status(400).json({ error: 'accessToken is required' });
+
+  try {
+    // Verify token and get user info from Google API
+    const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    
+    if (!response.ok) throw new Error('Failed to fetch user info from Google');
+    
+    const data = await response.json();
+    res.json({ 
+      success: true, 
+      user: {
+        name: data.name,
+        email: data.email,
+        avatar: data.picture
+      }
+    });
+  } catch (error) {
+    console.error('Google Auth Error:', error);
+    res.status(401).json({ error: 'Invalid Google token' });
+  }
+});
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || 'missing_key',

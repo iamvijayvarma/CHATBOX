@@ -14,17 +14,21 @@ export default function Sidebar({
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        // Send token to backend for verification
+        const authRes = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken: tokenResponse.access_token })
         });
-        const data = await res.json();
-        setUser({
-          name: data.name,
-          email: data.email,
-          avatar: data.picture
-        });
+        
+        const authData = await authRes.json();
+        if (authData.success) {
+          setUser(authData.user);
+        } else {
+          console.error("Auth verification failed:", authData.error);
+        }
       } catch (err) {
-        console.error("Google Profile Fetch Error:", err);
+        console.error("Google Auth Error:", err);
       }
     },
   });
