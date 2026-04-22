@@ -2,9 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const { OAuth2Client } = require('google-auth-library');
-const { search } = require('ddg-scraper');
-const util = require('util');
-const searchPromise = util.promisify(search);
+const { search } = require('duck-duck-scrape');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -20,9 +18,12 @@ app.use(express.json());
 async function performWebSearch(query) {
   try {
     console.log(`Searching for: ${query}`);
-    const urls = await searchPromise({ q: query, max: 5 });
-    if (!urls || urls.length === 0) return null;
-    return urls.map(url => `Source URL: ${url}`).join('\n');
+    const searchResults = await search(query);
+    if (!searchResults || !searchResults.results || searchResults.results.length === 0) return null;
+    
+    return searchResults.results.slice(0, 5).map(r => 
+      `Title: ${r.title}\nSnippet: ${r.description}\nSource: ${r.url}`
+    ).join('\n\n');
   } catch (err) {
     console.error('Search Error:', err);
     return null;
