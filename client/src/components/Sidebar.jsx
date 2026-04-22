@@ -84,8 +84,35 @@ export default function Sidebar({
   setUser,
   isAuthEnabled,
   isOpen,
-  onClose
+  onClose,
+  chatMode,
+  setChatMode
 }) {
+  const login = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const authRes = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accessToken: tokenResponse.access_token })
+        });
+        const authData = await authRes.json();
+        if (authData.success) setUser(authData.user);
+      } catch (err) { console.error("Google Auth Error:", err); }
+    },
+    enabled: isAuthEnabled
+  });
+
+  const handleModeSwitch = (mode) => {
+    if (mode === 'PRO' && !user) {
+      if (confirm('PRO mode requires sign-in to save and sync history. Sign in with Google?')) {
+        login();
+      }
+      return;
+    }
+    setChatMode(mode);
+  };
+
   return (
     <div className={`
       fixed md:relative top-0 left-0 h-full w-72 flex flex-col pt-4 z-[80] shrink-0
@@ -95,9 +122,9 @@ export default function Sidebar({
     `}>
       
       {/* Sidebar Header: Logo + Close Button */}
-      <div className="px-6 mb-6 flex items-center justify-between">
+      <div className="px-6 mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 p-0.5 shadow-lg shadow-indigo-500/10 hover:shadow-indigo-500/20 transition-all">
+          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 p-0.5 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all">
             <img src={logo} className="w-full h-full object-contain" alt="Logo" />
           </div>
           <div className="flex flex-col leading-none translate-y-[-1px]">
@@ -107,12 +134,32 @@ export default function Sidebar({
         </div>
 
         {/* Mobile Close Button */}
-        <button 
-          onClick={onClose}
-          className="md:hidden p-2 hover:bg-white/10 rounded-lg text-slate-400 transition-colors"
-        >
+        <button onClick={onClose} className="md:hidden p-2 hover:bg-white/10 rounded-lg text-slate-400">
           <X size={20} />
         </button>
+      </div>
+
+      {/* Mode Toggle */}
+      <div className="px-4 mb-6">
+        <div className="flex p-1.5 bg-black/40 rounded-2xl border border-white/5 backdrop-blur-xl relative">
+          <button 
+            onClick={() => handleModeSwitch('NORMAL')}
+            className={`flex-1 flex flex-col items-center py-2.5 rounded-xl transition-all relative z-10 ${chatMode === 'NORMAL' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            <span className="text-[13px] font-bold tracking-tight">Normal</span>
+            <span className="text-[9px] uppercase font-black tracking-widest opacity-60">Local</span>
+          </button>
+          <button 
+            onClick={() => handleModeSwitch('PRO')}
+            className={`flex-1 flex flex-col items-center py-2.5 rounded-xl transition-all relative z-10 ${chatMode === 'PRO' ? 'text-indigo-300' : 'text-slate-500 hover:text-slate-300'}`}
+          >
+            <span className="text-[13px] font-bold tracking-tight">Pro</span>
+            <span className="text-[9px] uppercase font-black tracking-widest opacity-60">Sync</span>
+          </button>
+          
+          {/* Animated Slider */}
+          <div className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white/5 border border-white/10 rounded-xl transition-all duration-300 ease-out shadow-xl ${chatMode === 'PRO' ? 'translate-x-full' : 'translate-x-0'}`} />
+        </div>
       </div>
 
       <LoginSection isAuthEnabled={isAuthEnabled} user={user} setUser={setUser} />
@@ -121,10 +168,14 @@ export default function Sidebar({
       <div className="px-4 mb-4">
         <button
           onClick={onNewChat}
-          className="w-full flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 text-white py-3.5 px-4 rounded-2xl shadow-lg transition-all font-medium border border-white/10 backdrop-blur-md"
+          className={`w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl shadow-lg transition-all font-medium border backdrop-blur-md ${
+            chatMode === 'PRO' 
+              ? 'bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-100 border-indigo-500/30' 
+              : 'bg-white/5 hover:bg-white/10 text-white border-white/10'
+          }`}
         >
           <Plus size={18} />
-          <span className="font-semibold tracking-wide">New Chat</span>
+          <span className="font-semibold tracking-wide">New {chatMode === 'PRO' ? 'Pro ' : ''}Chat</span>
         </button>
       </div>
 

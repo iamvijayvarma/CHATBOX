@@ -3,6 +3,14 @@ const cors = require('cors');
 require('dotenv').config();
 const { OAuth2Client } = require('google-auth-library');
 const { search } = require('duck-duck-scrape');
+const fs = require('fs');
+const path = require('path');
+
+// Ensure data directory exists
+const DATA_DIR = path.join(__dirname, 'data');
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR);
+}
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -58,6 +66,39 @@ app.post('/api/auth/google', async (req, res) => {
   } catch (error) {
     console.error('Google Auth Error:', error);
     res.status(401).json({ error: 'Invalid Google token or service unavailable' });
+  }
+});
+
+// PRO History Persistence Endpoints
+app.post('/api/history/save', async (req, res) => {
+  const { email, sessions } = req.body;
+  if (!email || !sessions) return res.status(400).json({ error: 'Email and sessions required' });
+
+  try {
+    const filename = path.join(DATA_DIR, `${Buffer.from(email).toString('hex')}.json`);
+    fs.writeFileSync(filename, JSON.stringify(sessions, null, 2));
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Save History Error:', error);
+    res.status(500).json({ error: 'Failed to save history' });
+  }
+});
+
+app.get('/api/history/load', async (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+
+  try {
+    const filename = path.join(DATA_DIR, `${Buffer.from(email).toString('hex')}.json`);
+    if (fs.existsSync(filename)) {
+      const data = fs.readFileSync(filename, 'utf-8');
+      res.json({ success: true, sessions: JSON.parse(data) });
+    } else {
+      res.json({ success: true, sessions: [] });
+    }
+  } catch (error) {
+    console.error('Load History Error:', error);
+    res.status(500).json({ error: 'Failed to load history' });
   }
 });
 
