@@ -3,7 +3,7 @@ import { Plus, MessageSquare, Trash2, Download, Upload, LogIn, LogOut, X } from 
 
 import logo from '../assets/logo.png';
 
-function LoginSection({ isAuthEnabled, user, setUser }) {
+function GoogleLoginButton({ setUser }) {
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
@@ -12,38 +12,35 @@ function LoginSection({ isAuthEnabled, user, setUser }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ accessToken: tokenResponse.access_token })
         });
-        
         const authData = await authRes.json();
-        if (authData.success) {
-          setUser(authData.user);
-        } else {
-          console.error("Auth verification failed:", authData.error);
-        }
-      } catch (err) {
-        console.error("Google Auth Error:", err);
-      }
-    },
-    // Only enable if isAuthEnabled is true
-    enabled: isAuthEnabled
+        if (authData.success) setUser(authData.user);
+      } catch (err) { console.error("Google Auth Error:", err); }
+    }
   });
 
+  return (
+    <button 
+      onClick={() => login()}
+      className="w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white p-3.5 rounded-2xl border border-white/10 transition-all group overflow-hidden relative shadow-lg"
+    >
+      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
+        <LogIn size={18} className="text-sky-400" />
+      </div>
+      <div className="flex flex-col items-start translate-y-[1px]">
+        <span className="text-[15px] font-bold tracking-tight">Log in</span>
+        <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-widest">With Google</span>
+      </div>
+    </button>
+  );
+}
+
+function LoginSection({ isAuthEnabled, user, setUser }) {
   if (!isAuthEnabled) return null;
 
   return (
     <div className="px-4 mb-6">
       {!user ? (
-        <button 
-          onClick={() => login()}
-          className="w-full flex items-center gap-3 bg-white/5 hover:bg-white/10 text-white p-3.5 rounded-2xl border border-white/10 transition-all group overflow-hidden relative shadow-lg"
-        >
-          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-white/20 transition-all">
-            <LogIn size={18} className="text-sky-400" />
-          </div>
-          <div className="flex flex-col items-start translate-y-[1px]">
-            <span className="text-[15px] font-bold tracking-tight">Log in</span>
-            <span className="text-[11px] text-slate-500 font-semibold uppercase tracking-widest">With Google</span>
-          </div>
-        </button>
+        <GoogleLoginButton setUser={setUser} />
       ) : (
         <div className="w-full group/card bg-white/[0.02] p-3 rounded-2xl border border-white/5 flex flex-col gap-3">
           <div className="flex items-center gap-3">
