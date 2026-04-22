@@ -242,12 +242,10 @@ function App() {
     </div>
   );
 
-  return isAuthEnabled ? (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+  return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID || ""}>
       {content}
     </GoogleOAuthProvider>
-  ) : (
-    <>{content}</>
   );
 }
 
