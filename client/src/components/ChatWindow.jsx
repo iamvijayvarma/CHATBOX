@@ -105,7 +105,7 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
               </motion.div>
             )}
             {/* Spacer to push content above InputBar */}
-            <div className="h-48 shrink-0" />
+            <div className="h-40 md:h-48 shrink-0" />
             <div ref={endRef} />
           </div>
         )}

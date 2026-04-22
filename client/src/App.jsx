@@ -228,7 +228,7 @@ function App() {
             isSearching={isSearching}
           />
           
-          <div className="pt-12 pb-3 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0c10] via-[#0a0c10]/95 to-transparent">
+          <div className="pt-6 md:pt-12 pb-2 md:pb-3 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0c10] via-[#0a0c10]/95 to-transparent">
             <InputBar 
               input={input}
               setInput={setInput}

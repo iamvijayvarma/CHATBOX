@@ -66,7 +66,7 @@ export default function MessageBubble({ message, onSpeak, onStopSpeak, isSpeakin
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 260, damping: 20 }}
-      className={`flex w-full mb-6 ${isUser ? 'justify-end' : 'justify-start'}`}
+      className={`flex w-full mb-4 md:mb-6 ${isUser ? 'justify-end' : 'justify-start'}`}
     >
       <div className={`flex max-w-[90%] md:max-w-[80%] ${isUser ? 'flex-row-reverse' : 'flex-row'} items-start gap-4`}>
         {/* Avatar */}
