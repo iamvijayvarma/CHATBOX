@@ -23,17 +23,25 @@ app.use(cors());
 app.use(express.json());
 
 // Helper for Real-Time Search
+// Helper for Real-Time Search with Timeout
 async function performWebSearch(query) {
   try {
     console.log(`Searching for: ${query}`);
-    const searchResults = await search(query);
+    // Add a 5s race to avoid hanging requests if search is slow
+    const searchPromise = search(query);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Search Timeout')), 5000)
+    );
+    
+    const searchResults = await Promise.race([searchPromise, timeoutPromise]);
+    
     if (!searchResults || !searchResults.results || searchResults.results.length === 0) return null;
     
     return searchResults.results.slice(0, 5).map(r => 
       `Title: ${r.title}\nSnippet: ${r.description}\nSource: ${r.url}`
     ).join('\n\n');
   } catch (err) {
-    console.error('Search Error:', err);
+    console.error('Search Error:', err.message);
     return null;
   }
 }
@@ -154,7 +162,8 @@ Maintain context, be concise but detailed when needed, and prioritize accuracy. 
         stream: true
       };
 
-      const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
+      const baseUrl = OPENAI_BASE_URL.replace(/\/$/, "");
+      const response = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${OPENAI_KEY.trim()}`,
@@ -164,8 +173,8 @@ Maintain context, be concise but detailed when needed, and prioritize accuracy. 
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`OpenAI API Error (${response.status}): ${errText}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || `API Error: ${response.status}`);
       }
 
       const reader = response.body.getReader();
@@ -191,48 +200,28 @@ Maintain context, be concise but detailed when needed, and prioritize accuracy. 
             const parsed = JSON.parse(data);
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) res.write(`data: ${JSON.stringify({ content })}\n\n`);
-          } catch (e) { /* ignore parse errors */ }
+          } catch (e) { /* silent parse */ }
         }
       }
     } else {
-      throw new Error('No valid API key found. Please check your .env configuration.');
+      throw new Error('API Key configuration is missing.');
     }
 
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (error) {
-    console.error('Chat API Error:', error.message || error);
+    console.error('Chat API Error:', error);
     
-    const lastUserMessage = messages[messages.length - 1]?.content || '';
-    let mockStr = `**[DINGO AI - ${persona.toUpperCase()}]**\n\n`;
-    
-    if (persona === 'Coder Wizard') {
-      mockStr += `👩‍💻 *Integration Error...*\n\nFailure: ${error.message || "Unknown error"}\n\n\`\`\`javascript\nconsole.log("DINGO AI optimized code for ${persona}.");\n\`\`\`\n\n*(Check your API keys and configuration!)*`;
-    } else {
-      mockStr += `🤖 *DINGO AI (System Mode) Error: "${lastUserMessage.slice(0, 50)}..."*\n\nI encountered an error connecting to the AI service. \n\n**Error Details:**\n\`${error.message || "Unknown error"}\`\n\n**Next Steps:**\n1. Ensure your **OPENAI_API_KEY** is correct.\n2. If using AICC, check your **OPENAI_BASE_URL**.\n3. Check the server console for logs.\n\nKeep exploring DINGO AI!`;
-    }
-    
-    const words = mockStr.split(/([ \n]+)/);
-    let i = 0;
-    
+    // Send error message through the stream so the UI can show it
     if (!res.headersSent) {
-        res.setHeader('Content-Type', 'text/event-stream');
-        res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'keep-alive');
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
     }
-
-    const sendChunk = () => {
-       if (i < words.length) {
-          res.write(`data: ${JSON.stringify({ content: words[i] })}\n\n`);
-          i++;
-          setTimeout(sendChunk, 30);
-       } else {
-          res.write('data: [DONE]\n\n');
-          res.end();
-       }
-    };
     
-    setTimeout(sendChunk, 100);
+    res.write(`data: ${JSON.stringify({ error: error.message || 'An unexpected error occurred.' })}\n\n`);
+    res.write('data: [DONE]\n\n');
+    res.end();
   }
 });
 
