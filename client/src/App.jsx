@@ -18,6 +18,14 @@ function App() {
   const [input, setInput] = useState('');
   const [user, setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
   const messages = currentSession.messages;
@@ -163,30 +171,35 @@ function App() {
         />
       )}
 
-      {/* Liquid Glass Background */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+      {/* Optimized Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none select-none">
         <img 
           src={liquidBg} 
-          className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity scale-[1.05]" 
-          alt="Base Texture" 
+          className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-luminosity scale-110" 
+          alt="" 
+          style={{ willChange: 'transform' }}
         />
-        <div className="absolute inset-0 bg-[#0a0c10]/70" />
+        <div className="absolute inset-0 bg-[#0a0c10]/80" />
         
-        <motion.div 
-          animate={{ background: 'radial-gradient(circle, #0ea5e933 0%, transparent 70%)' }}
-          transition={{ duration: 2, ease: "easeInOut" }}
-          className="ambient-blob w-[600px] h-[600px] top-[-10%] left-[-10%]" 
-        />
-        <motion.div 
-          animate={{ background: 'radial-gradient(circle, #0369a133 0%, transparent 70%)' }}
-          transition={{ duration: 2.5, ease: "easeInOut", delay: 0.2 }}
-          className="ambient-blob w-[500px] h-[500px] bottom-[-20%] right-[-10%]" 
-        />
-        <motion.div 
-          animate={{ background: 'radial-gradient(circle, #3b82f633 0%, transparent 70%)' }}
-          transition={{ duration: 3, ease: "easeInOut" }}
-          className="ambient-blob w-[800px] h-[800px] top-[20%] left-[30%]" 
-        />
+        {!isMobile && (
+          <>
+            <motion.div 
+              animate={{ background: 'radial-gradient(circle, #0ea5e922 0%, transparent 70%)' }}
+              transition={{ duration: 3, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" }}
+              className="ambient-blob w-[600px] h-[600px] top-[-10%] left-[-10%]" 
+            />
+            <motion.div 
+              animate={{ background: 'radial-gradient(circle, #0369a122 0%, transparent 70%)' }}
+              transition={{ duration: 4, ease: "easeInOut", delay: 0.5, repeat: Infinity, repeatType: "mirror" }}
+              className="ambient-blob w-[500px] h-[500px] bottom-[-20%] right-[-10%]" 
+            />
+            <motion.div 
+              animate={{ background: 'radial-gradient(circle, #3b82f622 0%, transparent 70%)' }}
+              transition={{ duration: 5, ease: "easeInOut", repeat: Infinity, repeatType: "mirror" }}
+              className="ambient-blob w-[800px] h-[800px] top-[20%] left-[30%]" 
+            />
+          </>
+        )}
       </div>
 
       <div className="flex h-full w-full relative">
@@ -205,7 +218,7 @@ function App() {
           onClose={() => setIsSidebarOpen(false)}
         />
         
-        <main className="flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#0a0c10]/60 backdrop-blur-[2px]">
+        <main className={`flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#0a0c10]/60 ${!isMobile ? 'backdrop-blur-[2px]' : ''}`}>
           <ChatWindow 
             messages={messages} 
             onSpeak={handleSpeak}
