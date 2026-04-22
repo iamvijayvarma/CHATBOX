@@ -143,7 +143,7 @@ function App() {
   const isAuthEnabled = Boolean(GOOGLE_CLIENT_ID);
 
   const content = (
-    <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
+    <div className="flex h-screen h-[100dvh] w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
       
       {/* Mobile Top Bar */}
       <div className="absolute top-0 left-0 right-0 h-16 z-[60] md:hidden flex items-center px-4 bg-[#0a0c10]/40 backdrop-blur-md border-b border-white/5">
