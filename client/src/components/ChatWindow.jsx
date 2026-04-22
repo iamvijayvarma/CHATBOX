@@ -87,10 +87,21 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-2xl w-fit"
+                className="flex items-center gap-1.5 p-4 bg-white/5 border border-white/5 rounded-2xl w-fit mb-4"
               >
-                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-slate-400">DINGO is searching the web...</span>
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{
+                      duration: 0.6,
+                      repeat: Infinity,
+                      delay: i * 0.15,
+                      ease: "easeInOut"
+                    }}
+                    className="w-1.5 h-1.5 bg-indigo-500/60 rounded-full"
+                  />
+                ))}
               </motion.div>
             )}
             {/* Spacer to push content above InputBar */}
