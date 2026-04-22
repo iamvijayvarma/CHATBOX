@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Code, Plane, BarChart } from 'lucide-react';
 import logo from '../assets/logo.png';
 
-export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingText, onQuickAction }) {
+export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingText, onQuickAction, isSearching }) {
   const endRef = useRef(null);
 
   useEffect(() => {
@@ -82,6 +82,17 @@ export default function ChatWindow({ messages, onSpeak, onStopSpeak, speakingTex
                 isSpeakingThis={speakingText === message.content}
               />
             ))}
+            {isSearching && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-3 p-4 bg-white/5 border border-white/10 rounded-2xl w-fit"
+              >
+                <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-slate-400">DINGO is searching the web...</span>
+              </motion.div>
+            )}
             {/* Spacer to push content above InputBar */}
             <div className="h-48 shrink-0" />
             <div ref={endRef} />

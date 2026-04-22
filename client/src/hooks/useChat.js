@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [abortController, setAbortController] = useState(null);
 
   const sendMessage = async (message, history, onChunk) => {
@@ -39,6 +40,10 @@ export const useChat = () => {
             
             try {
               const parsed = JSON.parse(data);
+              if (parsed.status === 'searching') {
+                setIsSearching(true);
+                continue;
+              }
               if (parsed.error) {
                 const errorMsg = `⚠️ **Error:** ${parsed.error}`;
                 fullResponse += errorMsg;
@@ -47,6 +52,7 @@ export const useChat = () => {
               }
               const { content } = parsed;
               if (content) {
+                setIsSearching(false); // Stop searching when content starts arriving
                 fullResponse += content;
                 if (onChunk) onChunk(content);
               }
@@ -64,9 +70,10 @@ export const useChat = () => {
       }
     } finally {
       setIsLoading(false);
+      setIsSearching(false);
       setAbortController(null);
     }
   };
 
-  return { sendMessage, isLoading, abortController, setAbortController, setIsLoading };
+  return { sendMessage, isLoading, isSearching, abortController, setAbortController, setIsLoading };
 };

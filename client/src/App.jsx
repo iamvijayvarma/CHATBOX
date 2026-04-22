@@ -22,7 +22,7 @@ function App() {
   const currentSession = sessions.find(s => s.id === currentSessionId) || sessions[0];
   const messages = currentSession.messages;
 
-  const { sendMessage, isLoading, abortController, setAbortController, setIsLoading } = useChat();
+  const { sendMessage, isLoading, isSearching, abortController, setAbortController, setIsLoading } = useChat();
   
   // Connect Voice Control to handlesubmit
   const { isListening, toggleListening, isSpeaking, speakText, stopSpeaking } = useVoiceControl((text) => {
@@ -48,13 +48,33 @@ function App() {
   };
 
   const handleDeleteSession = (id) => {
-    const filtered = sessions.filter(s => s.id !== id);
-    if (filtered.length === 0) {
-      handleNewChat();
-    } else {
-      setSessions(filtered);
-      if (currentSessionId === id) setCurrentSessionId(filtered[0].id);
-    }
+    setSessions(prev => {
+      const filtered = prev.filter(s => s.id !== id);
+      if (filtered.length === 0) {
+        // Return a new chat session if none left
+        return [{ id: Date.now().toString(), messages: [], title: 'New Chat', date: new Date().toISOString() }];
+      }
+      return filtered;
+    });
+    
+    // Adjust current session if it was deleted
+    setSessions(prev => {
+      if (currentSessionId === id && prev.length > 0) {
+        setCurrentSessionId(prev[0].id);
+      }
+      return prev;
+    });
+  };
+
+  const handleClearSessions = () => {
+    const freshSession = {
+      id: Date.now().toString(),
+      messages: [],
+      title: 'New Chat',
+      date: new Date().toISOString()
+    };
+    setSessions([freshSession]);
+    setCurrentSessionId(freshSession.id);
   };
 
   const handleExport = () => {
@@ -105,20 +125,20 @@ function App() {
   const handleSpeak = (text) => { setSpeakingText(text); speakText(text); };
   const handleStopSpeak = () => { setSpeakingText(null); stopSpeaking(); };
 
-  useEffect(() => { if (!isSpeaking) setSpeakingText(null); }, [isSpeaking]);
+  useEffect(() => { 
+    if (!isSpeaking) {
+      setSpeakingText(null);
+    }
+  }, [isSpeaking]);
 
   const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID; 
-
   const isAuthEnabled = Boolean(GOOGLE_CLIENT_ID);
-  if (!isAuthEnabled) {
-    console.warn("VITE_GOOGLE_CLIENT_ID is missing. Google Login is disabled.");
-  }
 
-  const mainLayout = (
+  const content = (
     <div className="flex h-screen w-screen bg-[#0a0c10] text-[#e2e8f0] font-sans relative overflow-hidden transition-colors duration-1000">
       
       {/* Mobile Top Bar */}
-      <div className="absolute top-0 left-0 right-0 h-16 z-50 md:hidden flex items-center px-4 bg-[#0a0c10]/40 backdrop-blur-md border-b border-white/5">
+      <div className="absolute top-0 left-0 right-0 h-16 z-[60] md:hidden flex items-center px-4 bg-[#0a0c10]/40 backdrop-blur-md border-b border-white/5">
         <button 
           onClick={() => setIsSidebarOpen(true)}
           className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-white transition-all shadow-md mr-4"
@@ -137,7 +157,7 @@ function App() {
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] md:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
@@ -168,13 +188,14 @@ function App() {
         />
       </div>
 
-      <div className="flex h-full w-full z-10 relative">
+      <div className="flex h-full w-full relative">
         <Sidebar 
           sessions={sessions}
           currentSessionId={currentSessionId}
           onSelectSession={setCurrentSessionId}
           onNewChat={(...args) => { handleNewChat(...args); setIsSidebarOpen(false); }}
           onDeleteSession={handleDeleteSession}
+          onClearSessions={handleClearSessions}
           onExport={handleExport}
           user={user}
           setUser={setUser}
@@ -190,6 +211,7 @@ function App() {
             onStopSpeak={handleStopSpeak}
             speakingText={speakingText}
             onQuickAction={handleSubmit}
+            isSearching={isSearching}
           />
           
           <div className="pt-12 pb-3 shrink-0 z-20 absolute bottom-0 left-0 w-full bg-gradient-to-t from-[#0a0c10] via-[#0a0c10]/95 to-transparent">
@@ -210,10 +232,10 @@ function App() {
 
   return isAuthEnabled ? (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      {mainLayout}
+      {content}
     </GoogleOAuthProvider>
   ) : (
-    <>{mainLayout}</>
+    <>{content}</>
   );
 }
 

@@ -4,8 +4,6 @@ import { Plus, MessageSquare, Trash2, Download, Upload, LogIn, LogOut, X } from 
 import logo from '../assets/logo.png';
 
 function LoginSection({ isAuthEnabled, user, setUser }) {
-  if (!isAuthEnabled) return null;
-
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
@@ -25,7 +23,11 @@ function LoginSection({ isAuthEnabled, user, setUser }) {
         console.error("Google Auth Error:", err);
       }
     },
+    // Only enable if isAuthEnabled is true
+    enabled: isAuthEnabled
   });
+
+  if (!isAuthEnabled) return null;
 
   return (
     <div className="px-4 mb-6">
@@ -76,6 +78,7 @@ export default function Sidebar({
   onSelectSession,
   onNewChat,
   onDeleteSession,
+  onClearSessions,
   onExport,
   user,
   setUser,
@@ -85,7 +88,8 @@ export default function Sidebar({
 }) {
   return (
     <div className={`
-      fixed md:relative top-0 left-0 h-full w-72 glass-panel flex flex-col pt-4 z-50 shrink-0
+      fixed md:relative top-0 left-0 h-full w-72 flex flex-col pt-4 z-[80] shrink-0
+      bg-[#0f172a]/95 md:bg-white/5 backdrop-blur-3xl border-r border-white/10 shadow-2xl
       transition-transform duration-300 ease-in-out
       ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
     `}>
@@ -126,7 +130,17 @@ export default function Sidebar({
 
       {/* Sessions List */}
       <div className="flex-1 overflow-y-auto px-3 space-y-1 mt-2 scrollbar-hide">
-        <div className="text-xs font-bold text-slate-500 mb-3 px-3 uppercase tracking-wider">History</div>
+        <div className="flex items-center justify-between mb-3 px-3">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">History</div>
+          {sessions.length > 0 && (
+            <button 
+              onClick={() => { if(confirm('Clear all chats?')) { onClearSessions(); } }}
+              className="text-[10px] font-bold text-slate-500 hover:text-red-400 transition-colors uppercase tracking-widest"
+            >
+              Clear All
+            </button>
+          )}
+        </div>
         {sessions.map((session) => (
           <div
             key={session.id}

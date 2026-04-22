@@ -1,19 +1,33 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { OAuth2Client } = require('google-auth-library');
+const { search } = require('ddg-scraper');
+const util = require('util');
+const searchPromise = util.promisify(search);
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
+// Initialize OpenAI/AICC Client config
+const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 app.use(cors());
 app.use(express.json());
+
+// Helper for Real-Time Search
+async function performWebSearch(query) {
+  try {
+    console.log(`Searching for: ${query}`);
+    const urls = await searchPromise({ q: query, max: 5 });
+    if (!urls || urls.length === 0) return null;
+    return urls.map(url => `Source URL: ${url}`).join('\n');
+  } catch (err) {
+    console.error('Search Error:', err);
+    return null;
+  }
+}
 
 // Verify Google Token Endpoint
 app.post('/api/auth/google', async (req, res) => {
@@ -26,7 +40,10 @@ app.post('/api/auth/google', async (req, res) => {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     
-    if (!response.ok) throw new Error('Failed to fetch user info from Google');
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`Google API responded with ${response.status}: ${errText}`);
+    }
     
     const data = await response.json();
     res.json({ 
@@ -39,7 +56,7 @@ app.post('/api/auth/google', async (req, res) => {
     });
   } catch (error) {
     console.error('Google Auth Error:', error);
-    res.status(401).json({ error: 'Invalid Google token' });
+    res.status(401).json({ error: 'Invalid Google token or service unavailable' });
   }
 });
 
@@ -50,48 +67,107 @@ app.post('/api/chat', async (req, res) => {
     return res.status(400).json({ error: 'Messages array is required' });
   }
 
-  let systemContent = "You are a precise and intelligent AI assistant. Maintain context and respond clearly.";
-  if (persona === 'Coder Wizard') systemContent = "You are a top-tier software engineer and coding wizard. Provide exact, highly optimized code snippets.";
-  if (persona === 'Creative Writer') systemContent = "You are an imaginative creative writer. Use vivid language, storytelling techniques, and deep empathy.";
+  const lastMessage = messages[messages.length - 1]?.content || "";
+  const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const currentTime = new Date().toLocaleTimeString('en-US');
+
+  let systemContent = `You are DINGO AI, a premium and highly intelligent assistant. Today is ${currentDate}, at ${currentTime}. 
+Maintain context, be concise but detailed when needed, and prioritize accuracy. If you use information from a search, cite the source if possible.`;
+
+  if (persona === 'Coder Wizard') systemContent += "\nPersona: You are a elite software engineer. Provide optimized, clean, and commented code.";
+  if (persona === 'Creative Writer') systemContent += "\nPersona: You are an imaginative storyteller. Use vivid language and deep empathy.";
+
+  const modelName = process.env.AI_MODEL || "gpt-4o-mini";
 
   try {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      systemInstruction: systemContent 
-    });
-
-    // Convert messages to Gemini format
-    const chatHistory = messages.slice(0, -1).map(m => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }]
-    }));
+    // 🌐 Web Search Logic (Heuristic for real-time info needs)
+    const needsSearch = lastMessage.toLowerCase().match(/(today|now|current|recent|news|price|who is|what is|weather|latest)/i);
+    let searchContext = "";
     
-    const lastMessage = messages[messages.length - 1].content;
+    if (needsSearch) {
+      console.log('Detected need for real-time information. Triggering search...');
+      res.write(`data: ${JSON.stringify({ status: 'searching' })}\n\n`);
+      const results = await performWebSearch(lastMessage);
+      if (results) {
+        searchContext = `\n\n[REAL-TIME SEARCH RESULTS]:\n${results}\n\nUse these results to provide the most current information. If the results are not relevant, rely on your knowledge base but mention the lack of fresh data.`;
+        systemContent += searchContext;
+      }
+    }
 
-    const chat = model.startChat({ history: chatHistory });
-    const result = await chat.sendMessageStream(lastMessage);
+    const OPENAI_KEY = process.env.OPENAI_API_KEY;
 
-    for await (const chunk of result.stream) {
-      const chunkText = chunk.text();
-      if (chunkText) res.write(`data: ${JSON.stringify({ content: chunkText })}\n\n`);
+    if (OPENAI_KEY) {
+      console.log(`Using OpenAI-compatible flow with model: ${modelName}`);
+      
+      const payload = {
+        model: modelName,
+        messages: [
+          { role: 'system', content: systemContent },
+          ...messages
+        ],
+        stream: true
+      };
+
+      const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_KEY.trim()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`OpenAI API Error (${response.status}): ${errText}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
+          
+          const data = trimmedLine.slice(6);
+          if (data === '[DONE]') continue;
+
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) res.write(`data: ${JSON.stringify({ content })}\n\n`);
+          } catch (e) { /* ignore parse errors */ }
+        }
+      }
+    } else {
+      throw new Error('No valid API key found. Please check your .env configuration.');
     }
 
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (error) {
-    console.log('Gemini API Error:', error);
+    console.error('Chat API Error:', error.message || error);
     
     const lastUserMessage = messages[messages.length - 1]?.content || '';
     let mockStr = `**[DINGO AI - ${persona.toUpperCase()}]**\n\n`;
     
     if (persona === 'Coder Wizard') {
-      mockStr += `👩‍💻 *Gemini integration initializing...*\n\nSince no valid key is set, I've generated a simulated response for: "${lastUserMessage.slice(0, 30)}..."\n\n\`\`\`javascript\nconsole.log("DINGO AI optimized code for ${persona}.");\n\`\`\`\n\n*(Add your Gemini key to .env for real intelligence!)*`;
+      mockStr += `👩‍💻 *Integration Error...*\n\nFailure: ${error.message || "Unknown error"}\n\n\`\`\`javascript\nconsole.log("DINGO AI optimized code for ${persona}.");\n\`\`\`\n\n*(Check your API keys and configuration!)*`;
     } else {
-      mockStr += `🤖 *DINGO AI (Gemini Mode) Processing: "${lastUserMessage.slice(0, 50)}..."*\n\nI am currently in **DINGO AI Demo Mode** because the Gemini key is missing or invalid. \n\n**Next Steps:**\n1. Get your key at aistudio.google.com\n2. Update your Vercel settings.\n\nKeep exploring DINGO AI!`;
+      mockStr += `🤖 *DINGO AI (System Mode) Error: "${lastUserMessage.slice(0, 50)}..."*\n\nI encountered an error connecting to the AI service. \n\n**Error Details:**\n\`${error.message || "Unknown error"}\`\n\n**Next Steps:**\n1. Ensure your **OPENAI_API_KEY** is correct.\n2. If using AICC, check your **OPENAI_BASE_URL**.\n3. Check the server console for logs.\n\nKeep exploring DINGO AI!`;
     }
     
     const words = mockStr.split(/([ \n]+)/);
@@ -118,10 +194,8 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-if (process.env.NODE_ENV !== 'production' || process.env.VERCEL !== '1') {
-  app.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-  });
-}
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
 
 module.exports = app;
