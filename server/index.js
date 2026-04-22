@@ -3,11 +3,17 @@ const cors = require('cors');
 require('dotenv').config();
 const { OAuth2Client } = require('google-auth-library');
 const { search } = require('duck-duck-scrape');
+const { OpenAI } = require('openai');
+
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Initialize OpenAI/AICC Client config
-const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || "https://api.openai.com/v1";
+// Initialize OpenAI Client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1"
+});
+
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 app.use(cors());
@@ -19,11 +25,11 @@ async function performWebSearch(query) {
     console.log(`Searching for: ${query}`);
     const searchPromise = search(query);
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Search Timeout')), 5000)
+      setTimeout(() => reject(new Error('Search Timeout')), 4000)
     );
     const searchResults = await Promise.race([searchPromise, timeoutPromise]);
     if (!searchResults || !searchResults.results || searchResults.results.length === 0) return null;
-    return searchResults.results.slice(0, 5).map(r => 
+    return searchResults.results.slice(0, 4).map(r => 
       `Title: ${r.title}\nSnippet: ${r.description}\nSource: ${r.url}`
     ).join('\n\n');
   } catch (err) {
@@ -61,7 +67,6 @@ app.post('/api/auth/google', async (req, res) => {
 
 app.post('/api/chat', async (req, res) => {
   const { messages, persona = 'Assistant' } = req.body;
-
   if (!messages || !Array.isArray(messages)) {
     return res.status(400).json({ error: 'Messages array is required' });
   }
@@ -70,104 +75,51 @@ app.post('/api/chat', async (req, res) => {
   const currentDate = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   const currentTime = new Date().toLocaleTimeString('en-US');
 
-  let systemContent = `You are DINGO AI, a premium and highly intelligent assistant. Today is ${currentDate}, at ${currentTime}. 
-Maintain context, be concise but detailed when needed, and prioritize accuracy. If you use information from a search, cite the source if possible.`;
-
-  if (persona === 'Coder Wizard') systemContent += "\nPersona: You are a elite software engineer. Provide optimized, clean, and commented code.";
-  if (persona === 'Creative Writer') systemContent += "\nPersona: You are an imaginative storyteller. Use vivid language and deep empathy.";
-
-  const modelName = process.env.AI_MODEL || "gpt-4o-mini";
+  let systemContent = `You are DINGO AI, a premium assistant. Today is ${currentDate}, ${currentTime}. Persona: ${persona}. 
+  Be smart, concise, and helpful. Use markdown for better formatting.`;
 
   try {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    // 🌐 Web Search Logic (Heuristic for real-time info needs)
-    const needsSearch = lastMessage.toLowerCase().match(/(today|now|current|recent|news|price|who is|what is|weather|latest)/i);
-    let searchContext = "";
-    
+    // 🌐 Web Search Logic
+    const needsSearch = lastMessage.toLowerCase().match(/(today|now|current|recent|news|price|who is|what is|weather|latest|time in)/i);
     if (needsSearch) {
-      console.log('Detected need for real-time information. Triggering search...');
       res.write(`data: ${JSON.stringify({ status: 'searching' })}\n\n`);
       const results = await performWebSearch(lastMessage);
       if (results) {
-        searchContext = `\n\n[REAL-TIME SEARCH RESULTS]:\n${results}\n\nUse these results to provide the most current information. If the results are not relevant, rely on your knowledge base but mention the lack of fresh data.`;
-        systemContent += searchContext;
+        systemContent += `\n\n[REAL-TIME INFO]:\n${results}`;
       }
     }
 
-    const OPENAI_KEY = process.env.OPENAI_API_KEY;
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('API Key missing on server');
+    }
 
-    if (OPENAI_KEY) {
-      console.log(`Using OpenAI-compatible flow with model: ${modelName}`);
-      
-      const payload = {
-        model: modelName,
-        messages: [
-          { role: 'system', content: systemContent },
-          ...messages
-        ],
-        stream: true
-      };
+    const stream = await openai.chat.completions.create({
+      model: process.env.AI_MODEL || "gpt-4o-mini",
+      messages: [
+        { role: 'system', content: systemContent },
+        ...messages
+      ],
+      stream: true,
+    });
 
-      const baseUrl = OPENAI_BASE_URL.replace(/\/$/, "");
-      const response = await fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${OPENAI_KEY.trim()}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || "";
+      if (content) {
+        res.write(`data: ${JSON.stringify({ content })}\n\n`);
       }
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop();
-
-        for (const line of lines) {
-          const trimmedLine = line.trim();
-          if (!trimmedLine || !trimmedLine.startsWith('data: ')) continue;
-          
-          const data = trimmedLine.slice(6);
-          if (data === '[DONE]') continue;
-
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) res.write(`data: ${JSON.stringify({ content })}\n\n`);
-          } catch (e) { /* silent parse */ }
-        }
-      }
-    } else {
-      throw new Error('API Key configuration is missing.');
     }
 
     res.write('data: [DONE]\n\n');
     res.end();
   } catch (error) {
     console.error('Chat API Error:', error);
-    
-    // Send error message through the stream so the UI can show it
     if (!res.headersSent) {
       res.setHeader('Content-Type', 'text/event-stream');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Connection', 'keep-alive');
     }
-    
     res.write(`data: ${JSON.stringify({ error: error.message || 'An unexpected error occurred.' })}\n\n`);
     res.write('data: [DONE]\n\n');
     res.end();
@@ -175,7 +127,5 @@ Maintain context, be concise but detailed when needed, and prioritize accuracy. 
 });
 
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+  console.log(`DINGO Server running on port ${port}`);
 });
-
-module.exports = app;
