@@ -10,23 +10,11 @@ import liquidBg from './assets/liquid-bg.png';
 import { motion } from 'framer-motion';
 
 function App() {
-  const [chatMode, setChatMode] = useState('NORMAL'); // 'NORMAL' or 'PRO'
-  
-  // Separate session states for Normal and Pro
-  const [normalSessions, setNormalSessions] = useState(() => {
-    const saved = localStorage.getItem('chat_sessions_normal');
-    return saved ? JSON.parse(saved) : [{ id: 'normal-1', messages: [], title: 'New Chat', date: new Date().toISOString() }];
+  const [sessions, setSessions] = useState(() => {
+    const saved = localStorage.getItem('chat_sessions');
+    return saved ? JSON.parse(saved) : [{ id: '1', messages: [], title: 'New Chat', date: new Date().toISOString() }];
   });
-  
-  const [proSessions, setProSessions] = useState(() => {
-    const saved = localStorage.getItem('chat_sessions_pro');
-    return saved ? JSON.parse(saved) : [{ id: 'pro-1', messages: [], title: 'New Pro Chat', date: new Date().toISOString() }];
-  });
-
-  const sessions = chatMode === 'PRO' ? proSessions : normalSessions;
-  const setSessions = chatMode === 'PRO' ? setProSessions : setNormalSessions;
-
-  const [currentSessionId, setCurrentSessionId] = useState(chatMode === 'PRO' ? 'pro-1' : 'normal-1');
+  const [currentSessionId, setCurrentSessionId] = useState('1');
   const [input, setInput] = useState('');
   const [user, setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -52,38 +40,13 @@ function App() {
   
   const [speakingText, setSpeakingText] = useState(null);
 
-  // Sync Logic
   useEffect(() => {
-    localStorage.setItem(`chat_sessions_${chatMode.toLowerCase()}`, JSON.stringify(sessions));
-    
-    // Auto-save PRO history to server if logged in
-    if (chatMode === 'PRO' && user?.email) {
-      fetch('/api/history/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: user.email, sessions })
-      }).catch(err => console.error("History sync error:", err));
-    }
-  }, [sessions, chatMode, user]);
-
-  // Load PRO history on login
-  useEffect(() => {
-    if (user?.email && chatMode === 'PRO') {
-      fetch(`/api/history/load?email=${encodeURIComponent(user.email)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.sessions.length > 0) {
-            setProSessions(data.sessions);
-            setCurrentSessionId(data.sessions[0].id);
-          }
-        })
-        .catch(err => console.error("History load error:", err));
-    }
-  }, [user, chatMode]);
+    localStorage.setItem('chat_sessions', JSON.stringify(sessions));
+  }, [sessions]);
 
   const handleNewChat = () => {
     const newSession = {
-      id: `${chatMode.toLowerCase()}-${Date.now().toString()}`,
+      id: Date.now().toString(),
       messages: [],
       title: 'New Chat',
       date: new Date().toISOString()
@@ -96,7 +59,7 @@ function App() {
     setSessions(prev => {
       const filtered = prev.filter(s => s.id !== id);
       if (filtered.length === 0) {
-        return [{ id: `${chatMode.toLowerCase()}-${Date.now().toString()}`, messages: [], title: 'New Chat', date: new Date().toISOString() }];
+        return [{ id: Date.now().toString(), messages: [], title: 'New Chat', date: new Date().toISOString() }];
       }
       return filtered;
     });
@@ -111,7 +74,7 @@ function App() {
 
   const handleClearSessions = () => {
     const freshSession = {
-      id: `${chatMode.toLowerCase()}-${Date.now().toString()}`,
+      id: Date.now().toString(),
       messages: [],
       title: 'New Chat',
       date: new Date().toISOString()
@@ -251,8 +214,6 @@ function App() {
           isAuthEnabled={isAuthEnabled}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
-          chatMode={chatMode}
-          setChatMode={setChatMode}
         />
         
         <main className={`flex-1 flex flex-col h-full relative border-l border-white/5 bg-gradient-to-b from-transparent to-[#0a0c10]/60 ${!isMobile ? 'backdrop-blur-[2px]' : ''}`}>

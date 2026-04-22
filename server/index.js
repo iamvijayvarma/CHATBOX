@@ -3,15 +3,6 @@ const cors = require('cors');
 require('dotenv').config();
 const { OAuth2Client } = require('google-auth-library');
 const { search } = require('duck-duck-scrape');
-const fs = require('fs');
-const path = require('path');
-
-// Ensure data directory exists
-const DATA_DIR = path.join(__dirname, 'data');
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR);
-}
-
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -22,21 +13,16 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 app.use(cors());
 app.use(express.json());
 
-// Helper for Real-Time Search
 // Helper for Real-Time Search with Timeout
 async function performWebSearch(query) {
   try {
     console.log(`Searching for: ${query}`);
-    // Add a 5s race to avoid hanging requests if search is slow
     const searchPromise = search(query);
     const timeoutPromise = new Promise((_, reject) => 
       setTimeout(() => reject(new Error('Search Timeout')), 5000)
     );
-    
     const searchResults = await Promise.race([searchPromise, timeoutPromise]);
-    
     if (!searchResults || !searchResults.results || searchResults.results.length === 0) return null;
-    
     return searchResults.results.slice(0, 5).map(r => 
       `Title: ${r.title}\nSnippet: ${r.description}\nSource: ${r.url}`
     ).join('\n\n');
@@ -50,18 +36,14 @@ async function performWebSearch(query) {
 app.post('/api/auth/google', async (req, res) => {
   const { accessToken } = req.body;
   if (!accessToken) return res.status(400).json({ error: 'accessToken is required' });
-
   try {
-    // Verify token and get user info from Google API
     const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
-    
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Google API responded with ${response.status}: ${errText}`);
     }
-    
     const data = await response.json();
     res.json({ 
       success: true, 
@@ -74,39 +56,6 @@ app.post('/api/auth/google', async (req, res) => {
   } catch (error) {
     console.error('Google Auth Error:', error);
     res.status(401).json({ error: 'Invalid Google token or service unavailable' });
-  }
-});
-
-// PRO History Persistence Endpoints
-app.post('/api/history/save', async (req, res) => {
-  const { email, sessions } = req.body;
-  if (!email || !sessions) return res.status(400).json({ error: 'Email and sessions required' });
-
-  try {
-    const filename = path.join(DATA_DIR, `${Buffer.from(email).toString('hex')}.json`);
-    fs.writeFileSync(filename, JSON.stringify(sessions, null, 2));
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Save History Error:', error);
-    res.status(500).json({ error: 'Failed to save history' });
-  }
-});
-
-app.get('/api/history/load', async (req, res) => {
-  const { email } = req.query;
-  if (!email) return res.status(400).json({ error: 'Email required' });
-
-  try {
-    const filename = path.join(DATA_DIR, `${Buffer.from(email).toString('hex')}.json`);
-    if (fs.existsSync(filename)) {
-      const data = fs.readFileSync(filename, 'utf-8');
-      res.json({ success: true, sessions: JSON.parse(data) });
-    } else {
-      res.json({ success: true, sessions: [] });
-    }
-  } catch (error) {
-    console.error('Load History Error:', error);
-    res.status(500).json({ error: 'Failed to load history' });
   }
 });
 
