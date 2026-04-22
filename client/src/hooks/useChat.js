@@ -20,7 +20,10 @@ export const useChat = () => {
         signal: controller.signal
       });
 
-      if (!response.ok) throw new Error('Chat request failed');
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Server Error: ${response.status} - ${errText || 'No details'}`);
+      }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
